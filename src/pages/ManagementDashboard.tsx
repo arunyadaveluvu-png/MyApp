@@ -1,21 +1,18 @@
-"use client";
-
 import { useEffect, useState } from "react";
 import { 
-  Building, Users, Activity, Star, Bed, Stethoscope, ChevronRight, 
-  Settings, Bell, Search, Plus, Filter, Calendar, MessageSquare,
+  Building, Activity, Star, Bed, Stethoscope, 
+  ChevronRight, Settings, Bell, Search, Plus, Filter, Calendar, MessageSquare,
   ClipboardList, Package, Wallet, Clock, CheckCircle2, ShieldCheck,
-  AlertCircle, Loader2, ArrowRight, ExternalLink, Mail, Phone, Globe, MapPin
+  AlertCircle, Loader2, ArrowRight, ExternalLink, Mail, Phone, Globe, MapPin, Users
 } from "lucide-react";
-import Link from "next/link";
+import { Link, useNavigate } from "react-router-dom";
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
-  Cell, PieChart, Pie
+  Cell
 } from "recharts";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/components/Toast";
-import { useRouter } from "next/navigation";
 
 const reviewCategories = [
   { key: "equipment_quality", label: "Equipment" },
@@ -35,6 +32,12 @@ export default function ManagementDashboard() {
   const [staff, setStaff] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  
+  // Onboarding State
+  const [onboardingMode, setOnboardingMode] = useState<"select" | "create" | null>(null);
+  const [hospitalsList, setHospitalsList] = useState<any[]>([]);
+  const [onboardingForm, setOnboardingForm] = useState({ hospital_id: "" });
+  const [hospital_name, setHospitalName] = useState("");
   
   // Hospital Settings States
   const [hospitalForm, setHospitalForm] = useState<any>({
@@ -62,24 +65,30 @@ export default function ManagementDashboard() {
   });
 
   const { showToast, hideToast } = useToast();
-  const router = useRouter();
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchData();
+    fetchHospitals();
   }, []);
+
+  const fetchHospitals = async () => {
+    const { data } = await supabase.from("hospitals").select("id, name");
+    if (data) setHospitalsList(data);
+  };
 
   const fetchData = async () => {
     setIsLoading(true);
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) {
-      router.push("/auth");
+      navigate("/auth");
       return;
     }
 
     const role = session.user.user_metadata?.role || "user";
     if (role !== "management") {
       showToast("Access Denied: Management privileges required.", "error");
-      router.push(`/dashboard/${role}`);
+      navigate(`/dashboard/${role}`);
       return;
     }
 
@@ -119,8 +128,13 @@ export default function ManagementDashboard() {
 
   const updateHospital = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!hospital?.id) {
+      showToast("Facility context missing. Unable to update.", "error");
+      return;
+    }
+    
     setIsSaving(true);
-    const toastId = showToast("Updating facility profile...", "loading");
+    const toastId = showToast("Synchronizing facility payload...", "loading");
 
     try {
       const { error } = await supabase
@@ -141,6 +155,11 @@ export default function ManagementDashboard() {
 
   const handleStaffAction = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!hospital?.id) {
+      showToast("Facility context required for staff provisioning.", "error");
+      return;
+    }
+
     setIsSaving(true);
     const toastId = showToast(currentStaff.id ? "Updating staff record..." : "Adding to clinical roster...", "loading");
 
@@ -170,6 +189,49 @@ export default function ManagementDashboard() {
     } finally {
       setIsSaving(false);
       hideToast(toastId);
+    }
+  };
+
+  const handleOnboarding = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSaving(true);
+    const tid = showToast("Establishing facility connection...", "loading");
+
+    try {
+      let finalHospId = onboardingForm.hospital_id;
+
+      if (onboardingMode === "create") {
+        const { data, error: hError } = await supabase
+          .from("hospitals")
+          .insert([{ name: hospital_name, management_id: profile.id }])
+          .select()
+          .single();
+        if (hError) throw hError;
+        finalHospId = data.id;
+      } else {
+        // Update hospital to have this manager
+        const { error: hUpdateError } = await supabase
+          .from("hospitals")
+          .update({ management_id: profile.id })
+          .eq("id", finalHospId);
+        if (hUpdateError) throw hUpdateError;
+      }
+
+      // Link profile to hospital
+      const { error: pError } = await supabase
+        .from("management_profiles")
+        .update({ hospital_id: finalHospId })
+        .eq("id", profile.id);
+      if (pError) throw pError;
+
+      showToast("Facility link finalized. Welcome to your portal.", "success");
+      setOnboardingMode(null);
+      fetchData();
+    } catch (err: any) {
+      showToast(err.message, "error");
+    } finally {
+      setIsSaving(false);
+      hideToast(tid);
     }
   };
 
@@ -222,7 +284,9 @@ export default function ManagementDashboard() {
     { label: "Inventory", value: inventory.length.toString(), icon: ClipboardList, sub: "Medical Units", color: "text-blue-600 bg-blue-50" },
     { label: "Appointments", value: appointments.length.toString(), icon: Calendar, sub: "Total Booked", color: "text-purple-600 bg-purple-50" },
     { label: "Avg Rating", value: reviews.length > 0 ? (reviews.reduce((acc, r) => acc + Number(r.overall_rating), 0) / reviews.length).toFixed(1) : "N/A", icon: Star, sub: "Patient Happiness", color: "text-amber-600 bg-amber-50" },
-  ];  return (
+  ];
+
+  return (
     <div className="bg-slate-50 min-h-screen">
       {/* Top Banner */}
       <div className="bg-slate-900 h-64 w-full relative overflow-hidden">
@@ -287,6 +351,87 @@ export default function ManagementDashboard() {
           ))}
         </div>
 
+        {!hospital ? (
+          <div className="mt-12 flex flex-col items-center justify-center p-12 bg-white rounded-[3rem] shadow-sm border border-slate-100 text-center animate-in fade-in zoom-in duration-700">
+            {!onboardingMode ? (
+              <>
+                <div className="h-24 w-24 rounded-[2.5rem] bg-amber-50 flex items-center justify-center text-amber-500 mb-8 border border-amber-100 shadow-inner">
+                  <AlertCircle size={48} />
+                </div>
+                <h2 className="text-3xl font-black text-slate-900 tracking-tight">Facility Connection Required</h2>
+                <p className="mt-4 text-slate-500 max-w-lg font-medium leading-relaxed">
+                  Your administrator account is active, but it is not currently managing any healthcare facility in our network.
+                </p>
+                <div className="mt-10 flex flex-wrap justify-center gap-4">
+                  <button 
+                    onClick={() => setOnboardingMode("select")}
+                    className="px-8 py-4 bg-slate-900 text-white rounded-2xl font-black text-sm hover:bg-slate-800 transition-all active:scale-95 shadow-xl shadow-slate-900/20"
+                  >
+                    Manage Existing Facility
+                  </button>
+                  <button 
+                    onClick={() => setOnboardingMode("create")}
+                    className="px-8 py-4 bg-primary-50 text-primary-600 rounded-2xl font-black text-sm hover:bg-primary-100 transition-all active:scale-95"
+                  >
+                    Register New Facility
+                  </button>
+                </div>
+              </>
+            ) : (
+              <div className="w-full max-w-md animate-in slide-in-from-bottom-4">
+                <div className="mb-8 flex items-center justify-between">
+                  <button 
+                    onClick={() => setOnboardingMode(null)}
+                    className="p-2 text-slate-400 hover:text-slate-600 transition-colors"
+                  >
+                    <Plus className="rotate-45" size={24} />
+                  </button>
+                  <h3 className="text-xl font-black text-slate-900 uppercase tracking-widest">Facility Setup</h3>
+                  <div className="w-10" />
+                </div>
+
+                <form onSubmit={handleOnboarding} className="space-y-6 text-left">
+                  {onboardingMode === "select" ? (
+                    <div>
+                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1 mb-2 block">Choose Your Facility</label>
+                      <select 
+                        required
+                        value={onboardingForm.hospital_id}
+                        onChange={(e) => setOnboardingForm({ ...onboardingForm, hospital_id: e.target.value })}
+                        className="w-full h-14 px-5 rounded-2xl bg-slate-50 border border-slate-100 font-bold focus:border-primary-500 transition-all outline-none"
+                      >
+                        <option value="">Select a facility from the network...</option>
+                        {hospitalsList.map(h => (
+                          <option key={h.id} value={h.id}>{h.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                  ) : (
+                    <div>
+                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1 mb-2 block">Facility Name</label>
+                      <input 
+                        required
+                        type="text"
+                        placeholder="e.g., Metro Health Center"
+                        value={hospital_name}
+                        onChange={(e) => setHospitalName(e.target.value)}
+                        className="w-full h-14 px-5 rounded-2xl bg-slate-50 border border-slate-100 font-bold focus:border-primary-500 transition-all outline-none"
+                      />
+                    </div>
+                  ) }
+                  <button 
+                    type="submit"
+                    disabled={isSaving}
+                    className="w-full h-14 bg-primary-600 text-white rounded-2xl font-black uppercase tracking-widest shadow-xl shadow-primary-600/20 hover:bg-primary-700 transition-all disabled:opacity-50"
+                  >
+                    {isSaving ? "Syncing..." : "Finalize Connection"}
+                  </button>
+                </form>
+              </div>
+            )}
+          </div>
+        ) : (
+          <>
         {/* Dynamic Navigation Tabs */}
         <div className="mt-12 flex flex-wrap gap-2 mb-8 p-1.5 bg-slate-100 rounded-2xl w-fit">
            {[
@@ -328,7 +473,7 @@ export default function ManagementDashboard() {
                       <h3 className="text-2xl font-black text-slate-900 tracking-tight">Performance Analytics</h3>
                       <p className="text-slate-500 font-medium mt-1">Aggregate satisfaction scores from verified patient tokens.</p>
                     </div>
-                    <Link href="/marketplace" className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-slate-900 text-white font-black text-xs hover:bg-slate-800 transition-all">
+                    <Link to="/marketplace" className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-slate-900 text-white font-black text-xs hover:bg-slate-800 transition-all">
                        <Package size={16} />
                        Buy Equipment
                     </Link>
@@ -455,7 +600,7 @@ export default function ManagementDashboard() {
                 <div className="rounded-3xl bg-white p-10 shadow-sm ring-1 ring-slate-100">
                    <div className="flex items-center justify-between mb-10">
                     <h3 className="text-2xl font-black text-slate-900 tracking-tight">Facility Inventory</h3>
-                    <Link href="/marketplace" className="px-6 py-3 bg-primary-600 text-white rounded-xl font-black text-xs shadow-lg shadow-primary-500/20 hover:bg-primary-700 transition-all flex items-center gap-2">
+                    <Link to="/marketplace" className="px-6 py-3 bg-primary-600 text-white rounded-xl font-black text-xs shadow-lg shadow-primary-500/20 hover:bg-primary-700 transition-all flex items-center gap-2">
                        <Plus size={16} /> Procure Assets
                     </Link>
                   </div>
@@ -689,6 +834,8 @@ export default function ManagementDashboard() {
               </div>
             )}
           </div>
+        )}
+          </>
         )}
       </div>
 

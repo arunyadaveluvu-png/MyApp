@@ -1,18 +1,16 @@
-"use client";
-
 import { useEffect, useState } from "react";
 import { 
   Users, Hospital, Package, DollarSign, TrendingUp, ArrowUpRight, ArrowDownRight, 
-  Plus, MoreHorizontal, Search, Filter, LayoutGrid, List, FileDown, Trash2, Edit3, Check, X
+  Plus, MoreHorizontal, Search, LayoutGrid, List, FileDown, Trash2, Edit3, Check, X
 } from "lucide-react";
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
-  LineChart, Line, AreaChart, Area, Cell, PieChart, Pie
+  AreaChart, Area, Cell, PieChart, Pie
 } from "recharts";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/components/Toast";
-import { useRouter } from "next/navigation";
+import { useNavigate } from "react-router-dom";
 
 const salesData = [
   { name: "Jan", sales: 4000, revenue: 120000 },
@@ -39,7 +37,6 @@ export default function AdminDashboard() {
   const [counts, setCounts] = useState({ users: 0, hospitals: 0, equipment: 0, revenue: 0 });
   const [recentOrders, setRecentOrders] = useState<any[]>([]);
   const [inventory, setInventory] = useState<any[]>([]);
-  const [admins, setAdmins] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   
   // Modals & Forms
@@ -53,7 +50,7 @@ export default function AdminDashboard() {
   });
 
   const { showToast, hideToast } = useToast();
-  const router = useRouter();
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchStats();
@@ -179,14 +176,14 @@ export default function AdminDashboard() {
     setIsLoading(true);
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-      router.push("/auth");
+      navigate("/auth");
       return;
     }
 
     const role = user.user_metadata?.role || "user";
     if (role !== "admin") {
       showToast("Access Denied: Admin privileges required.", "error");
-      router.push(`/dashboard/${role}`);
+      navigate(`/dashboard/${role}`);
       return;
     }
     

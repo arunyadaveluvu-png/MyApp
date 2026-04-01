@@ -1,14 +1,11 @@
-"use client";
-
 import { useEffect, useState, Suspense } from "react";
 import { 
   Stethoscope, Mail, Lock, User, ShieldCheck, 
-  ChevronRight, Building2, UserCircle, LayoutDashboard, Loader2
+  ChevronRight, Building2, Loader2
 } from "lucide-react";
-import Link from "next/link";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabase";
-import { useRouter, useSearchParams } from "next/navigation";
 
 type AuthRole = "user" | "management" | "admin";
 
@@ -25,8 +22,8 @@ function AuthForm() {
   const [isNewHospital, setIsNewHospital] = useState(false);
   const [hospitalName, setHospitalName] = useState("");
   
-  const router = useRouter();
-  const searchParams = useSearchParams();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const redirectTo = searchParams.get("redirect");
 
   useEffect(() => {
@@ -62,13 +59,19 @@ function AuthForm() {
         
         // Logical redirection
         if (redirectTo && userRole === "user") {
-          router.push(redirectTo);
+          navigate(redirectTo);
         } else {
-          router.push(`/dashboard/${userRole}`);
+          navigate(`/dashboard/${userRole}`);
         }
       } else {
-        if (role === "management" && !selectedHospital && !hospitalName) {
-          setError("Please select or enter a hospital to manage.");
+        if (role === "management" && !isNewHospital && !selectedHospital) {
+          setError("Please select a hospital to manage.");
+          setIsLoading(false);
+          return;
+        }
+
+        if (role === "management" && isNewHospital && !hospitalName) {
+          setError("Please enter the name of your new hospital.");
           setIsLoading(false);
           return;
         }
@@ -294,7 +297,7 @@ function AuthForm() {
           </button>
 
           <p className="mt-4 text-center text-xs leading-relaxed text-slate-400 px-4">
-            By continuing, you agree to MedicoCrew&apos;s <Link href="/terms" className="underline underline-offset-2">Terms of Service</Link> and <Link href="/privacy" className="underline underline-offset-2">Privacy Policy</Link>.
+            By continuing, you agree to MedicoCrew's <Link to="/terms" className="underline underline-offset-2">Terms of Service</Link> and <Link to="/privacy" className="underline underline-offset-2">Privacy Policy</Link>.
           </p>
         </form>
       </div>
@@ -304,9 +307,9 @@ function AuthForm() {
 
 export default function AuthPage() {
   return (
-    <div className="flex min-h-[calc(100vh-64px)] items-center justify-center bg-medical-light py-12 px-4 relative overflow-hidden">
+    <div className="flex min-h-[calc(100vh-64px)] items-center justify-center bg-slate-50 py-12 px-4 relative overflow-hidden">
       <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/3 h-96 w-96 rounded-full bg-primary-100/50 blur-3xl opacity-50" />
-      <div className="absolute bottom-0 left-0 translate-y-1/2 -translate-x-1/3 h-96 w-96 rounded-full bg-medical-cyan/10 blur-3xl opacity-50" />
+      <div className="absolute bottom-0 left-0 translate-y-1/2 -translate-x-1/3 h-96 w-96 rounded-full bg-primary-50/10 blur-3xl opacity-50" />
       
       <Suspense fallback={<div className="flex items-center justify-center p-12 bg-white rounded-3xl shadow-2xl"><Loader2 className="animate-spin text-primary-600" size={48} /></div>}>
         <AuthForm />

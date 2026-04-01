@@ -1,25 +1,23 @@
-"use client";
-
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import { Link } from "react-router-dom";
 import { ArrowRight, Activity, ShieldCheck, Stethoscope, Users, Star, MapPin } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { cn } from "@/lib/utils";
 
-export default function Home() {
+export default function HomePage() {
   const [featuredHospitals, setFeaturedHospitals] = useState<any[]>([]);
   const [session, setSession] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     async function fetchData() {
-      const [{ data: hospitals }, { data: { session } }] = await Promise.all([
+      const [{ data: hospitals }, { data: { session: authSession } }] = await Promise.all([
         supabase.from("hospitals").select("*").limit(3),
         supabase.auth.getSession()
       ]);
       
       if (hospitals) setFeaturedHospitals(hospitals);
-      setSession(session);
+      setSession(authSession);
       setIsLoading(false);
     }
     fetchData();
@@ -55,7 +53,7 @@ export default function Home() {
             </p>
             <div className="mt-12 flex flex-col items-center gap-6 sm:flex-row">
               <Link
-                href="/hospitals"
+                to="/hospitals"
                 className="flex h-16 items-center gap-3 rounded-2xl bg-slate-900 px-10 text-lg font-black text-white shadow-2xl shadow-slate-900/20 transition-all hover:bg-primary-600 hover:shadow-primary-500/40 active:scale-95"
               >
                 Find a Hospital
@@ -63,7 +61,7 @@ export default function Home() {
               </Link>
               {!session && (
                 <Link
-                  href="/auth"
+                  to="/auth"
                   className="flex h-16 items-center gap-2 rounded-2xl border-2 border-slate-100 bg-white px-10 text-lg font-black text-slate-900 transition-all hover:border-primary-100 hover:bg-slate-50 active:scale-95"
                 >
                   Join MedicoCrew
@@ -100,7 +98,7 @@ export default function Home() {
               <h2 className="text-4xl font-black tracking-tight text-slate-900">Featured Hospitals</h2>
               <p className="mt-2 text-lg text-slate-500 font-medium">Verified healthcare facilities at your service.</p>
             </div>
-            <Link href="/hospitals" className="font-black text-sm uppercase tracking-widest text-slate-900 hover:text-primary-600 transition-colors flex items-center gap-2 bg-slate-50 px-6 py-3 rounded-xl border border-slate-100 shadow-sm">
+            <Link to="/hospitals" className="font-black text-sm uppercase tracking-widest text-slate-900 hover:text-primary-600 transition-colors flex items-center gap-2 bg-slate-50 px-6 py-3 rounded-xl border border-slate-100 shadow-sm">
               View Directory <ArrowRight size={16} />
             </Link>
           </div>
@@ -131,7 +129,7 @@ export default function Home() {
                     
                     <div className="mt-10 pt-8 border-t border-slate-50">
                       <Link 
-                        href={session ? `/hospitals/${hospital.id}` : "/auth"} 
+                        to={session ? `/hospitals/${hospital.id}` : "/auth"} 
                         className={cn(
                           "flex items-center justify-center gap-2 w-full py-5 rounded-2xl font-black text-sm transition-all shadow-sm active:scale-95 group/btn",
                           session 
@@ -165,7 +163,7 @@ export default function Home() {
             </p>
             <div className="mt-14">
               <Link
-                href="/auth"
+                to="/auth"
                 className="inline-flex h-16 items-center gap-3 rounded-2xl bg-white px-12 text-lg font-black text-slate-900 hover:bg-emerald-500 hover:text-white hover:shadow-2xl hover:shadow-emerald-500/40 transition-all active:scale-95 shadow-xl shadow-white/5"
               >
                 Register Your Hospital

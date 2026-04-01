@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "react-router-dom";
 import { Globe, Share2, Mail, Phone, MapPin, Hospital } from "lucide-react";
 
 const Footer = () => {
@@ -7,7 +7,7 @@ const Footer = () => {
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 gap-12 md:grid-cols-2 lg:grid-cols-4">
           <div className="flex flex-col gap-6">
-            <Link href="/" className="flex items-center gap-2">
+            <Link to="/" className="flex items-center gap-2">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-600 text-white">
                 <Hospital size={24} />
               </div>
@@ -33,20 +33,20 @@ const Footer = () => {
           <div>
             <h3 className="mb-6 font-semibold text-slate-900">Platform</h3>
             <ul className="flex flex-col gap-4 text-sm text-slate-500">
-              <li><Link href="/hospitals" className="hover:text-primary-600">Find Hospitals</Link></li>
-              <li><Link href="/marketplace" className="hover:text-primary-600">Medical Marketplace</Link></li>
-              <li><Link href="/about" className="hover:text-primary-600">About Us</Link></li>
-              <li><Link href="/contact" className="hover:text-primary-600">Contact Support</Link></li>
+              <li><Link to="/hospitals" className="hover:text-primary-600">Find Hospitals</Link></li>
+              <li><Link to="/marketplace" className="hover:text-primary-600">Medical Marketplace</Link></li>
+              <li><Link to="/about" className="hover:text-primary-600">About Us</Link></li>
+              <li><Link to="/contact" className="hover:text-primary-600">Contact Support</Link></li>
             </ul>
           </div>
 
           <div>
             <h3 className="mb-6 font-semibold text-slate-900">For Facilities</h3>
             <ul className="flex flex-col gap-4 text-sm text-slate-500">
-              <li><Link href="/auth" className="hover:text-primary-600">Hospital Login</Link></li>
-              <li><Link href="/register" className="hover:text-primary-600">Partner with Us</Link></li>
-              <li><Link href="/equipment-sales" className="hover:text-primary-600">Equipment Sales</Link></li>
-              <li><Link href="/resources" className="hover:text-primary-600">Resources</Link></li>
+              <li><Link to="/auth" className="hover:text-primary-600">Hospital Login</Link></li>
+              <li><Link to="/register" className="hover:text-primary-600">Partner with Us</Link></li>
+              <li><Link to="/equipment-sales" className="hover:text-primary-600">Equipment Sales</Link></li>
+              <li><Link to="/resources" className="hover:text-primary-600">Resources</Link></li>
             </ul>
           </div>
 

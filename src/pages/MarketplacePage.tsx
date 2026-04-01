@@ -1,7 +1,5 @@
-"use client";
-
 import { useEffect, useState } from "react";
-import { Search, Filter, ShoppingCart, Star, ArrowRight, Package, ClipboardList, Microchip, Layers, Loader2, AlertCircle, X } from "lucide-react";
+import { Search, ShoppingCart, Star, Package, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/components/Toast";
@@ -221,10 +219,10 @@ export default function MarketplacePage() {
             {filteredItems.length === 0 && (
               <div className="mt-24 py-20 text-center rounded-[3rem] border-4 border-dashed border-slate-100">
                 <div className="mx-auto flex h-32 w-32 items-center justify-center rounded-[2.5rem] bg-slate-50 text-slate-200">
-                  <Search size={64} strokeWidth={1} />
+                  <Package size={64} strokeWidth={1} />
                 </div>
                 <h3 className="mt-10 text-2xl font-black text-slate-900 tracking-tight">Discovery Limit Reached</h3>
-                <p className="mt-2 text-slate-500 font-medium">We couldn&apos;t find any devices matching your query in the current network.</p>
+                <p className="mt-2 text-slate-500 font-medium">We couldn't find any devices matching your query in the current network.</p>
                 <button onClick={() => { setSearch(""); setSelectedCategory("All"); }} className="mt-8 text-primary-600 font-black text-xs uppercase tracking-widest hover:underline">Reset Inventory Search</button>
               </div>
             )}

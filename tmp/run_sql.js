@@ -20,7 +20,8 @@ async function run() {
   if (response.ok) {
     console.log('Migration applied successfully!');
   } else {
-    console.error('Migration failed:', result);
+    console.error('Migration failed with status:', response.status);
+    console.error('Error details:', JSON.stringify(result, null, 2));
     process.exit(1);
   }
 }

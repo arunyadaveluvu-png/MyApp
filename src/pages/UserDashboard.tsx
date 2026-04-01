@@ -1,15 +1,12 @@
-"use client";
-
 import { useEffect, useState } from "react";
 import { 
   User, Mail, Calendar, Star, MessageSquare, Clock, MapPin, 
   Settings, LogOut, ChevronRight, Bookmark, ShieldCheck, History, Hospital,
   Ticket, CheckCircle2, ArrowRight
 } from "lucide-react";
-import Link from "next/link";
+import { Link, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabase";
-import { useRouter } from "next/navigation";
 import { useToast } from "@/components/Toast";
 
 export default function UserDashboard() {
@@ -18,7 +15,7 @@ export default function UserDashboard() {
   const [reviews, setReviews] = useState<any[]>([]);
   const [appointments, setAppointments] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const router = useRouter();
+  const navigate = useNavigate();
   const { showToast } = useToast();
 
   useEffect(() => {
@@ -29,13 +26,13 @@ export default function UserDashboard() {
     setIsLoading(true);
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-      router.push("/auth");
+      navigate("/auth");
       return;
     }
 
     const role = user.user_metadata?.role || "user";
     if (role !== "user") {
-      router.push(`/dashboard/${role}`);
+      navigate(`/dashboard/${role}`);
       return;
     }
 
@@ -74,7 +71,7 @@ export default function UserDashboard() {
     showToast("Signing out...", "loading");
     await supabase.auth.signOut();
     showToast("Signed out successfully", "success");
-    router.push("/");
+    navigate("/");
   };
 
   return (
@@ -220,7 +217,7 @@ export default function UserDashboard() {
                       </p>
                       {app.status === 'completed' && (
                         <Link 
-                          href={`/hospitals/${app.hospital_id}`}
+                          to={`/hospitals/${app.hospital_id}`}
                           className="flex items-center gap-2 text-xs font-black text-primary-600 hover:text-primary-700 transition-colors uppercase tracking-widest"
                         >
                           Submit Review
@@ -233,7 +230,7 @@ export default function UserDashboard() {
                 <div className="text-center py-20 bg-white rounded-3xl border-2 border-dashed border-slate-200">
                   <Calendar size={48} className="mx-auto text-slate-200 mb-4" />
                   <p className="text-sm font-black text-slate-400">No scheduled appointments found.</p>
-                  <Link href="/hospitals" className="mt-4 inline-flex items-center gap-2 text-xs font-black text-primary-600 uppercase tracking-widest hover:underline">
+                  <Link to="/hospitals" className="mt-4 inline-flex items-center gap-2 text-xs font-black text-primary-600 uppercase tracking-widest hover:underline">
                     Find a Facility
                     <ChevronRight size={14} className="rotate-90" />
                   </Link>
@@ -293,7 +290,7 @@ export default function UserDashboard() {
                 <Bookmark size={40} />
               </div>
               <p className="mt-4 text-sm font-bold text-slate-400">No saved hospitals yet.</p>
-              <Link href="/hospitals" className="mt-4 text-xs font-black text-primary-600 uppercase tracking-widest hover:underline">Find your first hospital</Link>
+              <Link to="/hospitals" className="mt-4 text-xs font-black text-primary-600 uppercase tracking-widest hover:underline">Find your first hospital</Link>
             </div>
           )}
         </main>

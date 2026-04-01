@@ -1,13 +1,10 @@
-"use client";
-
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import { 
   Star, Bed, Stethoscope, Activity, ShieldCheck, 
-  Clock, Share2, Heart, ArrowLeft, MessageSquare, ClipboardList, 
+  Clock, Heart, ArrowLeft, MessageSquare, ClipboardList, 
   CheckCircle2, AlertCircle, Loader2, KeyRound, Ticket, LayoutDashboard, X,
-  Mail, Phone, MapPin, Globe, Package, Users, ShieldCheck as Shield
+  Mail, Phone, MapPin, Globe, Package, Users
 } from "lucide-react";
-import Link from "next/link";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabase";
@@ -21,10 +18,9 @@ const reviewCategories = [
   { label: "Waiting Time", key: "waiting_time" },
 ];
 
-export default function HospitalDetailsPage() {
-  const params = useParams();
-  const router = useRouter();
-  const id = params?.id as string;
+export default function HospitalDetail() {
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("reviews");
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [hospital, setHospital] = useState<any>(null);
@@ -62,7 +58,7 @@ export default function HospitalDetailsPage() {
       const { data: { session } } = await supabase.auth.getSession();
       
       if (!session) {
-        router.push(`/auth?redirect=/hospitals/${id}`);
+        navigate(`/auth?redirect=/hospitals/${id}`);
         return;
       }
 
@@ -92,7 +88,7 @@ export default function HospitalDetailsPage() {
       setIsLoading(false);
     };
     if (id) fetchData();
-  }, [id, router]);
+  }, [id, navigate]);
 
   const verifyToken = async () => {
     if (!tokenInput.trim()) return;
@@ -170,7 +166,7 @@ export default function HospitalDetailsPage() {
   const handleBookAppointment = async () => {
     if (!user) {
       showToast("Please sign in to book an appointment", "error");
-      router.push(`/auth?redirect=/hospitals/${id}`);
+      navigate(`/auth?redirect=/hospitals/${id}`);
       return;
     }
     
@@ -191,7 +187,7 @@ export default function HospitalDetailsPage() {
 
       if (error) throw error;
       
-      hideToast(toastId); // Fix: Use hideToast instead of 3-arg showToast
+      hideToast(toastId);
       showToast(`Booking Successful! Your token is ${token}. Track it in your dashboard.`, "success");
     } catch (err: any) {
       hideToast(toastId);
@@ -215,14 +211,14 @@ export default function HospitalDetailsPage() {
     </div>
   );
 
-  if (!hospital) return <div>Hospital not found</div>;
+  if (!hospital) return <div className="p-20 text-center font-black text-2xl">Hospital not found</div>;
 
   return (
     <div className="bg-slate-50 min-h-screen">
       {/* Top Banner & Header */}
       <section className="bg-white border-b sticky top-0 z-40 shadow-sm">
         <div className="container mx-auto px-4 py-6">
-          <Link href="/hospitals" className="flex items-center gap-2 text-sm font-bold text-slate-400 hover:text-primary-600 mb-6 transition-colors group">
+          <Link to="/hospitals" className="flex items-center gap-2 text-sm font-bold text-slate-400 hover:text-primary-600 mb-6 transition-colors group">
             <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
             Back to Hospitals
           </Link>
@@ -270,7 +266,7 @@ export default function HospitalDetailsPage() {
                 </button>
               ) : (
                 <Link 
-                  href={`/dashboard/${role}`}
+                  to={`/dashboard/${role}`}
                   className="flex h-12 items-center justify-center gap-2 rounded-2xl bg-slate-900 px-8 font-black text-white shadow-xl shadow-slate-900/30 hover:bg-slate-800 transition-all active:scale-95"
                 >
                   <LayoutDashboard size={20} />
@@ -285,7 +281,6 @@ export default function HospitalDetailsPage() {
       <div className="container mx-auto px-4 mt-12 grid grid-cols-1 lg:grid-cols-3 gap-12 pb-24">
         {/* Left Side: Details */}
         <div className="lg:col-span-2 space-y-12">
-          {/* Photos Mockup */}
           <div className="aspect-[21/9] w-full rounded-3xl bg-slate-200 overflow-hidden relative group shadow-inner">
             {hospital.image_url ? (
               <img src={hospital.image_url} alt={hospital.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000" />
@@ -296,11 +291,10 @@ export default function HospitalDetailsPage() {
             )}
           </div>
 
-          {/* Description */}
           <div className="rounded-3xl bg-white p-8 shadow-sm ring-1 ring-slate-100">
             <h3 className="text-2xl font-black text-slate-800 tracking-tight mb-6">About the Facility</h3>
             <p className="text-slate-600 leading-relaxed text-lg italic">
-              &quot;{hospital.description || "No description available for this facility yet."}&quot;
+              "{hospital.description || "No description available for this facility yet."}"
             </p>
             
             <div className="mt-12 grid grid-cols-2 md:grid-cols-4 gap-8 border-t pt-8">
@@ -335,7 +329,6 @@ export default function HospitalDetailsPage() {
             </div>
           </div>
 
-          {/* Review Token Entry Section (Only for Users) */}
           {role === "user" && (
             <div className="rounded-3xl bg-slate-900 p-8 text-white shadow-2xl relative overflow-hidden group">
               <div className="absolute top-0 right-0 -translate-y-4 translate-x-4 h-32 w-32 bg-primary-500/20 rounded-full blur-3xl group-hover:scale-150 transition-all duration-1000" />
@@ -372,7 +365,6 @@ export default function HospitalDetailsPage() {
             </div>
           )}
 
-          {/* Tabs / Reviews */}
           <div className="rounded-3xl bg-white shadow-sm ring-1 ring-slate-100 overflow-hidden">
             <div className="flex border-b bg-slate-50/50">
               <button 
@@ -445,10 +437,9 @@ export default function HospitalDetailsPage() {
                           </div>
                         </div>
                         <p className="text-slate-600 text-sm leading-relaxed italic border-l-4 border-slate-100 pl-6 py-2">
-                          &quot;{review.review_text}&quot;
+                          "{review.review_text}"
                         </p>
                         
-                        {/* Rating Breakdown Badges */}
                         <div className="mt-4 flex flex-wrap gap-2 pl-6">
                            {reviewCategories.map(cat => (
                              <div key={cat.key} className="px-2 py-1 bg-slate-50 rounded text-[9px] font-bold text-slate-500 border border-slate-100">
@@ -531,7 +522,6 @@ export default function HospitalDetailsPage() {
           </div>
         </div>
 
-        {/* Right Side: Quick Info / Contact */}
         <div className="space-y-8">
           <div className="rounded-3xl bg-white p-8 shadow-sm ring-1 ring-slate-100">
             <h3 className="text-xl font-bold mb-8 text-slate-900 tracking-tight flex items-center gap-2">
@@ -575,17 +565,6 @@ export default function HospitalDetailsPage() {
                   <div className="text-sm font-bold text-slate-700">{hospital.email || "contact@facility.com"}</div>
                 </div>
               </div>
-              {hospital.website && (
-                 <div className="flex items-center gap-4">
-                   <div className="h-10 w-10 rounded-xl bg-primary-50 flex items-center justify-center text-primary-600">
-                     <Globe size={20} />
-                   </div>
-                   <div>
-                     <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Website</div>
-                     <div className="text-sm font-bold text-slate-700 truncate">{hospital.website}</div>
-                   </div>
-                 </div>
-              )}
             </div>
             
             {role === "user" ? (
@@ -599,7 +578,7 @@ export default function HospitalDetailsPage() {
               </button>
             ) : (
               <Link 
-                href={`/dashboard/${role}`}
+                to={`/dashboard/${role}`}
                 className="mt-10 flex items-center justify-center w-full py-4 rounded-2xl bg-slate-900 text-white font-black text-sm hover:bg-slate-800 transition-all active:scale-95 shadow-xl shadow-slate-900/20"
               >
                 Manage Facility
@@ -619,7 +598,6 @@ export default function HospitalDetailsPage() {
         </div>
       </div>
 
-      {/* Review Submission Modal */}
       {showReviewModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
           <div className="w-full max-w-2xl rounded-3xl bg-white p-10 shadow-2xl relative overflow-hidden ring-1 ring-slate-100">
@@ -687,7 +665,6 @@ export default function HospitalDetailsPage() {
         </div>
       )}
 
-      {/* Contact Modal */}
       {showContactModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
            <div className="w-full max-w-md rounded-3xl bg-white p-8 shadow-2xl relative overflow-hidden ring-1 ring-slate-100 animate-in zoom-in duration-300">
@@ -706,7 +683,7 @@ export default function HospitalDetailsPage() {
               
               <div className="space-y-4">
                  <a 
-                   href="tel:+915550001111" 
+                   href={`tel:${hospital.phone || "+915550001111"}`} 
                    className="flex items-center justify-between p-5 rounded-2xl bg-slate-50 border border-slate-100 hover:border-primary-200 transition-all group"
                  >
                     <div className="flex items-center gap-4">
@@ -716,7 +693,7 @@ export default function HospitalDetailsPage() {
                     <span className="text-sm font-black text-primary-600 group-hover:translate-x-1 transition-transform">Dial Now</span>
                  </a>
                  <a 
-                   href="mailto:contact@hospital.com" 
+                   href={`mailto:${hospital.email || "contact@hospital.com"}`} 
                    className="flex items-center justify-between p-5 rounded-2xl bg-slate-50 border border-slate-100 hover:border-primary-200 transition-all group"
                  >
                     <div className="flex items-center gap-4">

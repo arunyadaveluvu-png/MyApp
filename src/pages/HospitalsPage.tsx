@@ -1,14 +1,11 @@
-"use client";
-
 import { useEffect, useState } from "react";
-import { Search, MapPin, Star, Filter, ArrowRight, Hospital, Bed, Stethoscope, Activity, Layers, Loader2, Lock } from "lucide-react";
-import Link from "next/link";
+import { Search, MapPin, Star, Filter, ArrowRight, Bed, Stethoscope, Activity, Loader2, Lock } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabase";
-import { useRouter } from "next/navigation";
 
 export default function HospitalsPage() {
-  const router = useRouter();
+  const navigate = useNavigate();
   const [hospitals, setHospitals] = useState<any[]>([]);
   const [search, setSearch] = useState("");
   const [selectedService, setSelectedService] = useState("All");
@@ -41,7 +38,7 @@ export default function HospitalsPage() {
 
   const fetchHospitals = async () => {
     setIsLoading(true);
-    const { data, error } = await supabase
+    const { data } = await supabase
       .from("hospitals")
       .select("*");
     
@@ -52,8 +49,8 @@ export default function HospitalsPage() {
   const allServices = ["All", ...Array.from(new Set(hospitals.flatMap(h => h.services || [])))];
 
   const filteredHospitals = hospitals.filter(h => {
-    const matchesSearch = h.name.toLowerCase().includes(search.toLowerCase()) || h.location.toLowerCase().includes(search.toLowerCase());
-    const matchesService = selectedService === "All" || h.services?.includes(selectedService);
+    const matchesSearch = h.name.toLowerCase().includes(search.toLowerCase()) || (h.location && h.location.toLowerCase().includes(search.toLowerCase()));
+    const matchesService = selectedService === "All" || (h.services && h.services.includes(selectedService));
     
     // Management sees only their hospital
     if (userRole === "management" && managedHospitalId) {
@@ -193,7 +190,7 @@ export default function HospitalsPage() {
                       <div className="mt-8 pt-6 border-t border-slate-50">
                         {user ? (
                           <Link 
-                            href={`/hospitals/${hospital.id}`} 
+                            to={`/hospitals/${hospital.id}`} 
                             className="flex items-center justify-center gap-2 w-full py-4 rounded-2xl bg-slate-50 text-primary-600 font-black text-sm hover:bg-primary-600 hover:text-white transition-all group-active:scale-95 shadow-sm"
                           >
                             Explore Facility
@@ -201,7 +198,7 @@ export default function HospitalsPage() {
                           </Link>
                         ) : (
                           <Link 
-                            href={`/auth?redirect=/hospitals/${hospital.id}`} 
+                            to={`/auth?redirect=/hospitals/${hospital.id}`} 
                             className="flex items-center justify-center gap-2 w-full py-4 rounded-2xl bg-amber-50 text-amber-700 font-black text-sm hover:bg-amber-100 transition-all group-active:scale-95 border border-amber-100/50"
                           >
                             <Lock size={16} />

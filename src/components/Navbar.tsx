@@ -1,18 +1,15 @@
-"use client";
-
-import Link from "next/link";
+import { Link, useNavigate } from "react-router-dom";
 import { Hospital, LayoutDashboard, LogIn, LogOut, Menu, Package, Search, User, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabase";
-import { useRouter } from "next/navigation";
 import { useToast } from "@/components/Toast";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [session, setSession] = useState<any>(null);
   const [role, setRole] = useState<string | null>(null);
-  const router = useRouter();
+  const navigate = useNavigate();
   const { showToast } = useToast();
 
   useEffect(() => {
@@ -34,7 +31,7 @@ const Navbar = () => {
     await supabase.auth.signOut();
     showToast("Signed out successfully", "success");
     setIsOpen(false);
-    router.push("/");
+    navigate("/");
   };
 
   const navLinks = [
@@ -55,7 +52,7 @@ const Navbar = () => {
   return (
     <nav className="sticky top-0 z-50 w-full border-b bg-white/80 backdrop-blur-md">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
-        <Link href="/" className="flex items-center gap-2 group">
+        <Link to="/" className="flex items-center gap-2 group">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-600 text-white transition-transform group-hover:scale-110">
             <Hospital size={24} />
           </div>
@@ -69,7 +66,7 @@ const Navbar = () => {
           {navLinks.map((link) => (
             <Link
               key={link.name}
-              href={link.href}
+              to={link.href}
               className="text-sm font-medium text-slate-600 hover:text-primary-600 transition-colors"
             >
               {link.name}
@@ -90,7 +87,7 @@ const Navbar = () => {
           {session ? (
             <div className="flex items-center gap-2">
               <Link
-                href={dashboardHref}
+                to={dashboardHref}
                 className="flex items-center gap-2 rounded-full bg-slate-900 px-6 py-2 text-sm font-medium text-white shadow-lg shadow-slate-900/10 hover:bg-slate-800 transition-all active:scale-95"
               >
                 <LayoutDashboard size={18} />
@@ -106,7 +103,7 @@ const Navbar = () => {
             </div>
           ) : (
             <Link
-              href="/auth"
+              to="/auth"
               className="flex items-center gap-2 rounded-full bg-primary-600 px-6 py-2 text-sm font-medium text-white shadow-lg shadow-primary-500/30 hover:bg-primary-700 hover:shadow-primary-600/40 transition-all active:scale-95"
             >
               <LogIn size={18} />
@@ -135,7 +132,7 @@ const Navbar = () => {
           {navLinks.map((link) => (
             <Link
               key={link.name}
-              href={link.href}
+              to={link.href}
               className="text-lg font-medium text-slate-700 p-2 hover:bg-slate-50 rounded-lg"
               onClick={() => setIsOpen(false)}
             >
@@ -144,7 +141,7 @@ const Navbar = () => {
           ))}
           {!session && (
             <Link
-              href="/auth"
+              to="/auth"
               className="flex items-center justify-center gap-2 rounded-lg bg-primary-600 py-3 text-white font-medium"
               onClick={() => setIsOpen(false)}
             >
@@ -155,7 +152,7 @@ const Navbar = () => {
           {session && (
             <>
               <Link
-                href={dashboardHref}
+                to={dashboardHref}
                 className="flex items-center justify-center gap-2 rounded-lg bg-slate-900 py-3 text-white font-medium"
                 onClick={() => setIsOpen(false)}
               >
