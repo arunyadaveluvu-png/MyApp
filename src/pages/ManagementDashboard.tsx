@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { 
-  Building, Activity, Star, Bed, Stethoscope, 
-  ChevronRight, Settings, Bell, Search, Plus, Filter, Calendar, MessageSquare,
-  ClipboardList, Package, Wallet, Clock, CheckCircle2, ShieldCheck,
-  AlertCircle, Loader2, ArrowRight, ExternalLink, Mail, Phone, Globe, MapPin, Users
+  Building, Activity, Star, 
+  Settings, Bell, Search, Plus, Calendar, MessageSquare,
+  ClipboardList, Package, Wallet, ShieldCheck,
+  AlertCircle, Loader2, ArrowRight, Mail, Phone, Users
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { 

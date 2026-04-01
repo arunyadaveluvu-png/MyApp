@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
-import { Hospital, LayoutDashboard, LogIn, LogOut, Menu, Package, Search, User, X } from "lucide-react";
+import { Hospital, LayoutDashboard, LogIn, LogOut, Menu, Search, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabase";

@@ -3,7 +3,7 @@ import {
   Star, Bed, Stethoscope, Activity, ShieldCheck, 
   Clock, Heart, ArrowLeft, MessageSquare, ClipboardList, 
   CheckCircle2, AlertCircle, Loader2, KeyRound, Ticket, LayoutDashboard, X,
-  Mail, Phone, MapPin, Globe, Package, Users
+  Mail, Phone, MapPin, Package, Users
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
@@ -34,7 +34,6 @@ export default function HospitalDetail() {
   // Token Rating States
   const [tokenInput, setTokenInput] = useState("");
   const [tokenError, setTokenError] = useState("");
-  const [isValidToken, setIsValidToken] = useState(false);
   const [isVerifyingToken, setIsVerifyingToken] = useState(false);
   
   // Review Form States
@@ -117,7 +116,6 @@ export default function HospitalDetail() {
         if (existingReview) {
           setTokenError("This token has already been used to submit a review.");
         } else {
-          setIsValidToken(true);
           setShowReviewModal(true);
           showToast("Token validated successfully!", "success");
         }
@@ -146,7 +144,6 @@ export default function HospitalDetail() {
 
     if (!error) {
       setShowReviewModal(false);
-      setIsValidToken(false);
       setTokenInput("");
       // Refresh reviews
       const { data: newReviews } = await supabase

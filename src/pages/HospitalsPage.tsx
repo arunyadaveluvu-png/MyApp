@@ -1,11 +1,10 @@
 import { useEffect, useState } from "react";
 import { Search, MapPin, Star, Filter, ArrowRight, Bed, Stethoscope, Activity, Loader2, Lock } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabase";
 
 export default function HospitalsPage() {
-  const navigate = useNavigate();
   const [hospitals, setHospitals] = useState<any[]>([]);
   const [search, setSearch] = useState("");
   const [selectedService, setSelectedService] = useState("All");

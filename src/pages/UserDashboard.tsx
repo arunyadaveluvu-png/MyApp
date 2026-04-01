@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { 
-  User, Mail, Calendar, Star, MessageSquare, Clock, MapPin, 
-  Settings, LogOut, ChevronRight, Bookmark, ShieldCheck, History, Hospital,
-  Ticket, CheckCircle2, ArrowRight
+  User, Mail, Calendar, Star, MessageSquare, Clock, 
+  Settings, LogOut, Bookmark, ShieldCheck, History, Hospital,
+  Ticket, CheckCircle2, ChevronRight
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -14,7 +14,6 @@ export default function UserDashboard() {
   const [profile, setProfile] = useState<any>(null);
   const [reviews, setReviews] = useState<any[]>([]);
   const [appointments, setAppointments] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
   const { showToast } = useToast();
 
@@ -23,7 +22,6 @@ export default function UserDashboard() {
   }, []);
 
   const fetchData = async () => {
-    setIsLoading(true);
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       navigate("/auth");
@@ -64,7 +62,6 @@ export default function UserDashboard() {
       .order("appointment_date", { ascending: false });
 
     if (apps) setAppointments(apps);
-    setIsLoading(false);
   };
 
   const handleLogout = async () => {

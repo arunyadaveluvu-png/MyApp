@@ -4,7 +4,7 @@ import {
   Plus, MoreHorizontal, Search, LayoutGrid, List, FileDown, Trash2, Edit3, Check, X
 } from "lucide-react";
 import { 
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
+  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
   AreaChart, Area, Cell, PieChart, Pie
 } from "recharts";
 import { cn } from "@/lib/utils";
@@ -37,7 +37,6 @@ export default function AdminDashboard() {
   const [counts, setCounts] = useState({ users: 0, hospitals: 0, equipment: 0, revenue: 0 });
   const [recentOrders, setRecentOrders] = useState<any[]>([]);
   const [inventory, setInventory] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   
   // Modals & Forms
   const [isAddAdminOpen, setIsAddAdminOpen] = useState(false);
@@ -173,7 +172,6 @@ export default function AdminDashboard() {
   };
 
   const fetchStats = async () => {
-    setIsLoading(true);
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       navigate("/auth");
@@ -205,7 +203,6 @@ export default function AdminDashboard() {
     });
 
     setRecentOrders(inventoryData);
-    setIsLoading(false);
   };
 
   const stats = [
@@ -355,7 +352,7 @@ export default function AdminDashboard() {
                     paddingAngle={5}
                     dataKey="value"
                   >
-                    {categoryData.map((entry, index) => (
+                    {categoryData.map((_entry, index) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>
