@@ -44,7 +44,7 @@ export default function HomePage() {
               </span>
               Now trusted by 250+ Premier Hospitals
             </div>
-            <h1 className="mt-10 text-5xl font-black tracking-tighter text-slate-900 sm:text-7xl lg:text-8xl leading-[0.9]">
+            <h1 className="mt-8 text-4xl font-black tracking-tighter text-slate-900 sm:text-7xl lg:text-8xl leading-[0.95]">
               Find Your <br />
               <span className="text-primary-600">Perfect Care.</span>
             </h1>
@@ -73,15 +73,15 @@ export default function HomePage() {
       </section>
 
       {/* Video Showcase Section */}
-      <section className="bg-white pb-24">
+      <section className="bg-white pb-16 md:pb-24">
         <div className="container mx-auto px-4">
           <div className="max-w-5xl mx-auto">
             <div className="relative group">
               {/* Decorative Background Elements */}
-              <div className="absolute -inset-4 bg-gradient-to-tr from-primary-500/10 to-emerald-500/10 rounded-[3rem] blur-2xl opacity-50 group-hover:opacity-100 transition-opacity duration-700" />
+              <div className="absolute -inset-2 md:-inset-4 bg-gradient-to-tr from-primary-500/10 to-emerald-500/10 rounded-3xl md:rounded-[3rem] blur-2xl opacity-50 group-hover:opacity-100 transition-opacity duration-700" />
               
               {/* Premium Video Container */}
-              <div className="relative aspect-video w-full rounded-[2.5rem] bg-slate-900 overflow-hidden shadow-2xl border border-slate-100 ring-1 ring-slate-900/5 transition-transform duration-700 group-hover:scale-[1.01]">
+              <div className="relative aspect-video w-full rounded-2xl md:rounded-[2.5rem] bg-slate-900 overflow-hidden shadow-2xl border border-slate-100 ring-1 ring-slate-900/5 transition-transform duration-700 group-hover:scale-[1.01]">
                 <iframe
                   src="https://drive.google.com/file/d/1y_tXW_mxESqcdWHzjVNUOluTjoLpeOQ_/preview"
                   className="absolute inset-0 w-full h-full border-none"
@@ -91,10 +91,10 @@ export default function HomePage() {
               </div>
               
               {/* Video Tagline */}
-              <div className="mt-8 flex items-center justify-center gap-3 text-xs font-black uppercase tracking-[0.3em] text-slate-400">
-                <span className="h-[1px] w-12 bg-slate-200" />
+              <div className="mt-6 md:mt-8 flex items-center justify-center gap-3 text-[10px] md:text-xs font-black uppercase tracking-[0.2em] md:tracking-[0.3em] text-slate-400">
+                <span className="hidden sm:inline h-[1px] w-8 md:w-12 bg-slate-200" />
                 Experience MedicoCrew In 60 Seconds
-                <span className="h-[1px] w-12 bg-slate-200" />
+                <span className="hidden sm:inline h-[1px] w-8 md:w-12 bg-slate-200" />
               </div>
             </div>
           </div>
