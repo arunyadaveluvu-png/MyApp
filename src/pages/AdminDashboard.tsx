@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { 
   Hospital, ArrowUpRight, ArrowDownRight, 
-  Plus, Search, FileDown, Filter,
-  Shield, Globe, Database, CreditCard, Activity, Bell
+  Plus, Search, FileDown, Filter, Trash2, Edit3,
+  Shield, Globe, Database, CreditCard, Activity, Bell, Package, CheckCircle2, AlertTriangle
 } from "lucide-react";
 import { 
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
@@ -44,6 +44,10 @@ export default function AdminDashboard() {
   // Modals & Forms
   const [isAddAdminOpen, setIsAddAdminOpen] = useState(false);
   const [isAddEquipmentOpen, setIsAddEquipmentOpen] = useState(false);
+  const [editingEquipment, setEditingEquipment] = useState<any>(null);
+  const [allHospitals, setAllHospitals] = useState<any[]>([]);
+  const [allUsers, setAllUsers] = useState<any[]>([]);
+  
   const [newAdmin, setNewAdmin] = useState({ name: "", email: "" });
   const [newEquipment, setNewEquipment] = useState({ 
     name: "", category: "Emergency", price: "", stock: "0", supplier: "", description: "", image_url: "" 
@@ -55,6 +59,7 @@ export default function AdminDashboard() {
   useEffect(() => {
     fetchStats();
     fetchInventory();
+    fetchAllNodes();
   }, []);
 
   const handleAddAdmin = async (e: React.FormEvent) => {
@@ -70,27 +75,56 @@ export default function AdminDashboard() {
 
   const handleAddEquipment = async (e: React.FormEvent) => {
     e.preventDefault();
-    const toastId = showToast("Registering asset in global ledger...", "loading");
+    const isEdit = !!editingEquipment;
+    const toastId = showToast(isEdit ? "Synchronizing asset updates..." : "Registering asset in global ledger...", "loading");
     
     try {
-      const { error } = await supabase.from("equipment").insert([{
-        ...newEquipment,
-        price: parseFloat(newEquipment.price),
-        stock: parseInt(newEquipment.stock) || 0,
-        rating: 4.5
-      }]);
-
-      if (error) throw error;
+      if (isEdit) {
+        const { error } = await supabase.from("equipment")
+          .update({
+            ...newEquipment,
+            price: parseFloat(newEquipment.price),
+            stock: parseInt(newEquipment.stock) || 0,
+          })
+          .eq("id", editingEquipment.id);
+        if (error) throw error;
+        showToast(`${newEquipment.name} updated successfully.`, "success");
+      } else {
+        const { error } = await supabase.from("equipment").insert([{
+          ...newEquipment,
+          price: parseFloat(newEquipment.price),
+          stock: parseInt(newEquipment.stock) || 0,
+          rating: 4.5
+        }]);
+        if (error) throw error;
+        showToast(`${newEquipment.name} cataloged in the ecosystem.`, "success");
+      }
 
       hideToast(toastId);
-      showToast(`${newEquipment.name} cataloged in the ecosystem.`, "success");
       setIsAddEquipmentOpen(false);
+      setEditingEquipment(null);
       setNewEquipment({ name: "", category: "Emergency", price: "", stock: "0", supplier: "", description: "", image_url: "" });
       fetchInventory();
       fetchStats();
     } catch (err: any) {
       hideToast(toastId);
       showToast(err.message, "error");
+    }
+  };
+
+  const decommissionEquipment = async (id: string) => {
+    if (!confirm("Are you sure you want to decommission this asset? This action is permanent.")) return;
+    const toastId = showToast("Decommissioning medical asset...", "loading");
+    try {
+      const { error } = await supabase.from("equipment").delete().eq("id", id);
+      if (error) throw error;
+      showToast("Asset successfully removed from global catalog.", "success");
+      fetchInventory();
+      fetchStats();
+    } catch (err: any) {
+      showToast(err.message, "error");
+    } finally {
+      hideToast(toastId);
     }
   };
 
@@ -162,6 +196,15 @@ export default function AdminDashboard() {
     setRecentOrders(inventoryData);
   };
 
+  const fetchAllNodes = async () => {
+    const [hRes, uRes] = await Promise.all([
+      supabase.from("hospitals").select("*").order("name"),
+      supabase.from("user_profiles").select("*").order("full_name")
+    ]);
+    if (hRes.data) setAllHospitals(hRes.data);
+    if (uRes.data) setAllUsers(uRes.data);
+  };
+
   const stats = [
     { label: "Total Nodes", value: counts.users.toLocaleString(), icon: Globe, trend: "+14.2%", up: true, color: "bg-indigo-500/10 text-indigo-400" },
     { label: "Partner Facilities", value: counts.hospitals.toLocaleString(), icon: Hospital, trend: "+3.1%", up: true, color: "bg-violet-500/10 text-violet-400" },
@@ -183,7 +226,7 @@ export default function AdminDashboard() {
           </Link>
           
           <div className="hidden lg:flex items-center gap-8 text-[10px] font-black uppercase tracking-[0.3em]">
-            {["overview", "inventory", "staff"].map((tab) => (
+            {["overview", "inventory", "orders", "nodes", "staff"].map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
@@ -323,14 +366,14 @@ export default function AdminDashboard() {
                       <ResponsiveContainer width="100%" height="100%">
                          <PieChart>
                             <Pie
-                              data={categoryData}
-                              cx="50%"
-                              cy="50%"
-                              innerRadius={80}
-                              outerRadius={110}
-                              paddingAngle={8}
-                              dataKey="value"
-                              stroke="none"
+                               data={categoryData}
+                               cx="50%"
+                               cy="50%"
+                               innerRadius={80}
+                               outerRadius={110}
+                               paddingAngle={8}
+                               dataKey="value"
+                               stroke="none"
                             >
                                {categoryData.map((_entry, index) => (
                                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
@@ -426,10 +469,31 @@ export default function AdminDashboard() {
                    <div key={item.id} className="bg-[#0A0D12] rounded-[3rem] p-10 border border-white/5 shadow-2xl relative group overflow-hidden hover:border-indigo-500/30 transition-all">
                       <div className="absolute top-0 right-0 p-8 opacity-0 group-hover:opacity-100 transition-opacity">
                          <div className="flex gap-2">
-                            <div className="h-10 px-4 rounded-xl bg-white/5 text-[8px] font-black uppercase tracking-widest text-slate-500 flex items-center justify-center border border-white/5">
-                               Immutable Asset
-                            </div>
-                         </div>
+                             <button 
+                               onClick={() => {
+                                 setEditingEquipment(item);
+                                 setNewEquipment({
+                                   name: item.name,
+                                   category: item.category || "General",
+                                   price: item.price.toString(),
+                                   stock: item.stock.toString(),
+                                   supplier: item.supplier || "",
+                                   description: item.description || "",
+                                   image_url: item.image_url || ""
+                                 });
+                                 setIsAddEquipmentOpen(true);
+                               }}
+                               className="h-10 w-10 rounded-xl bg-white/5 text-indigo-400 flex items-center justify-center border border-white/5 hover:bg-indigo-600 hover:text-white transition-all shadow-xl"
+                             >
+                                <Edit3 size={18} />
+                             </button>
+                             <button 
+                               onClick={() => decommissionEquipment(item.id)}
+                               className="h-10 w-10 rounded-xl bg-white/5 text-rose-500 flex items-center justify-center border border-white/5 hover:bg-rose-600 hover:text-white transition-all shadow-xl"
+                             >
+                                <Trash2 size={18} />
+                             </button>
+                          </div>
                       </div>
 
                       <div className="h-20 w-20 bg-slate-900 rounded-3xl border border-white/10 overflow-hidden shadow-inner mb-8 transform group-hover:scale-110 transition-transform duration-500">
@@ -464,7 +528,92 @@ export default function AdminDashboard() {
            </div>
         )}
 
-        {/* Staff/Admin Tab similarly styled... */}
+        {activeTab === "orders" && (
+           <div className="bg-[#0A0D12] rounded-[3rem] border border-white/5 shadow-2xl p-12 animate-in fade-in slide-in-from-bottom-8 duration-1000">
+              <div className="flex items-center justify-between mb-12">
+                 <div>
+                    <h3 className="text-2xl font-black text-white tracking-tight uppercase italic">Logistics Hub</h3>
+                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">Cross-referencing all facility procurement request streams</p>
+                 </div>
+                 <div className="flex gap-4">
+                    <div className="flex items-center gap-3 px-6 py-3 rounded-2xl bg-white/5 border border-white/10 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                       <Package size={16} className="text-indigo-500" />
+                       {recentOrders.length} active streams
+                    </div>
+                 </div>
+              </div>
+              
+              <div className="space-y-6">
+                 {recentOrders.map(order => (
+                   <div key={order.id} className="p-8 rounded-[2.5rem] bg-white/[0.02] border border-white/5 hover:border-indigo-500/20 transition-all flex flex-col md:flex-row items-center justify-between gap-8">
+                      <div className="flex items-center gap-6">
+                         <div className="h-20 w-20 rounded-3xl bg-slate-900 border border-white/10 overflow-hidden shadow-inner">
+                            <img src={order.hospitals?.image_url || FALLBACK_HOSPITAL} className="w-full h-full object-cover" />
+                         </div>
+                         <div>
+                            <h4 className="text-lg font-black text-white italic uppercase tracking-tight">{order.hospitals?.name}</h4>
+                            <p className="text-xs font-bold text-indigo-400 mt-1">{order.equipment?.name}</p>
+                            <div className="flex items-center gap-3 mt-3 text-[9px] font-black text-slate-600 uppercase tracking-widest">
+                               <span>ID: #{order.id.slice(0, 8)}</span>
+                               <span>•</span>
+                               <span>{new Date(order.acquisition_date).toLocaleDateString()}</span>
+                            </div>
+                         </div>
+                      </div>
+                      
+                      <div className="flex items-center gap-8">
+                         <div className="text-center">
+                            <div className="text-[9px] font-black text-slate-600 uppercase tracking-widest mb-1">Payload Value</div>
+                            <div className="text-xl font-black text-white tracking-tighter">₹{order.equipment?.price?.toLocaleString()}</div>
+                         </div>
+                         <div className="h-12 w-px bg-white/5 mx-2" />
+                         <div className="flex flex-col items-end gap-3">
+                            <span className="px-4 py-1.5 rounded-xl bg-emerald-500/5 text-emerald-400 border border-emerald-500/20 text-[9px] font-black uppercase tracking-widest">Confirmed Receipt</span>
+                            <button className="text-[10px] font-black text-indigo-500 uppercase tracking-[0.2em] hover:underline">Download Invoice</button>
+                         </div>
+                      </div>
+                   </div>
+                 ))}
+              </div>
+           </div>
+        )}
+
+        {activeTab === "nodes" && (
+           <div className="bg-[#0A0D12] rounded-[3rem] border border-white/5 shadow-2xl p-12 animate-in fade-in slide-in-from-bottom-8 duration-1000">
+              <div className="flex items-center justify-between mb-12">
+                 <div>
+                    <h3 className="text-2xl font-black text-white tracking-tight uppercase italic">Global Facility Grid</h3>
+                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">Status and verification monitor for all platform facility nodes</p>
+                 </div>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                 {allHospitals.map(hospital => (
+                   <div key={hospital.id} className="p-8 rounded-[2.5rem] bg-white/[0.02] border border-white/5 hover:border-indigo-500/20 transition-all flex items-start justify-between">
+                      <div className="flex items-center gap-6">
+                         <div className="h-16 w-16 rounded-2xl bg-slate-900 border border-white/10 overflow-hidden">
+                            <img src={hospital.image_url || FALLBACK_HOSPITAL} className="w-full h-full object-cover" />
+                         </div>
+                         <div>
+                            <h4 className="text-lg font-black text-white uppercase tracking-tighter">{hospital.name}</h4>
+                            <p className="text-xs font-bold text-slate-500 mt-1">{hospital.location}</p>
+                            <div className="flex items-center gap-3 mt-4">
+                               <span className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-emerald-500/5 text-emerald-400 border border-emerald-500/20 text-[8px] font-black uppercase tracking-widest">
+                                  <CheckCircle2 size={10} /> Verified Facility
+                               </span>
+                            </div>
+                         </div>
+                      </div>
+                      <div className="flex flex-col items-end gap-2 text-right">
+                         <div className="text-[9px] font-black text-slate-600 uppercase tracking-widest">Clinical Expert Load</div>
+                         <div className="text-2xl font-black text-indigo-400">{hospital.doctors || 0} specialists</div>
+                      </div>
+                   </div>
+                 ))}
+              </div>
+           </div>
+        )}
+
         {activeTab === "staff" && (
            <div className="bg-[#0A0D12] rounded-[3rem] p-12 border border-white/5 shadow-2xl animate-in fade-in slide-in-from-bottom-8 duration-1000 min-h-[600px]">
               <div className="flex items-center justify-between mb-16">
@@ -481,31 +630,33 @@ export default function AdminDashboard() {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-                 {[
-                   { name: "Arun Kumar", email: "aruneluvu@gmail.com", role: "System Architect", level: "Root Access", avatar: "A" },
-                   { name: "Stephen Grace", email: "stephen@medicocrew.com", role: "Clinical Director", level: "Full Auth", avatar: "S" },
-                   { name: "Prabhas", email: "prabhas@medicocrew.com", role: "Security Ops", level: "Full Auth", avatar: "P" },
-                 ].map((admin, i) => (
+                 {allUsers.filter(u => u.role === "admin" || i === 0).slice(0, 6).map((admin: any, i) => (
                    <div key={i} className="bg-white/5 rounded-[2.5rem] p-10 border border-white/5 group hover:border-indigo-500/30 transition-all text-center">
                       <div className="h-24 w-24 rounded-[2rem] bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 text-4xl font-black mx-auto mb-8 shadow-inner group-hover:scale-110 transition-transform duration-700">
-                         {admin.avatar}
+                         {admin.full_name?.[0] || "A"}
                       </div>
-                      <h4 className="text-xl font-black text-white tracking-tight uppercase leading-none">{admin.name}</h4>
-                      <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mt-2">{admin.role}</p>
+                      <h4 className="text-xl font-black text-white tracking-tight uppercase leading-none">{admin.full_name}</h4>
+                      <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mt-2">{admin.role || "Admin Node"}</p>
                       
                       <div className="mt-8 space-y-3">
-                         <div className="px-6 py-3 bg-black/40 rounded-2xl border border-white/5 text-[10px] font-bold text-slate-500 italic truncate tracking-wide">{admin.email}</div>
-                         <div className="px-6 py-2 bg-emerald-500/5 rounded-xl border border-emerald-500/20 text-[9px] font-black text-emerald-400 tracking-[0.3em] uppercase">{admin.level}</div>
+                         <div className="px-6 py-3 bg-black/40 rounded-2xl border border-white/5 text-[10px] font-bold text-slate-500 italic truncate tracking-wide">{admin.id.slice(0, 15)}...</div>
+                         <div className="px-6 py-2 bg-emerald-500/5 rounded-xl border border-emerald-500/20 text-[9px] font-black text-emerald-400 tracking-[0.3em] uppercase">Full Auth</div>
                       </div>
                    </div>
                  ))}
+                 {allUsers.length === 0 && (
+                    <div className="col-span-full py-20 text-center">
+                       <Shield size={48} className="mx-auto mb-4 opacity-10" />
+                       <p className="font-bold text-slate-600 uppercase tracking-widest">Scanning for administrative signatures...</p>
+                    </div>
+                 )}
               </div>
            </div>
         )}
 
       </div>
 
-      {/* Global Modals - Glassmorphic Dark */}
+      {/* Admin Provisioning Modal */}
       {isAddAdminOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-8 bg-[#05070A]/95 backdrop-blur-3xl animate-in fade-in duration-500">
            <div className="w-full max-w-md bg-[#0A0D12] rounded-[3rem] p-12 border border-white/10 shadow-3xl animate-in zoom-in-95 duration-500">
@@ -530,16 +681,22 @@ export default function AdminDashboard() {
         </div>
       )}
 
-      {/* Asset Registration Modal */}
+      {/* Asset Onboarding / Edit Modal */}
       {isAddEquipmentOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-8 bg-[#05070A]/95 backdrop-blur-3xl animate-in fade-in duration-500">
            <div className="w-full max-w-2xl bg-[#0A0D12] rounded-[3.5rem] p-16 border border-white/10 shadow-3xl animate-in zoom-in-95 duration-500 max-h-[90vh] overflow-y-auto custom-scrollbar">
               <div className="flex items-center justify-between mb-16">
                  <div>
-                    <h3 className="text-4xl font-black text-white italic uppercase tracking-tighter leading-none">Asset Onboarding</h3>
+                    <h3 className="text-4xl font-black text-white italic uppercase tracking-tighter leading-none">{editingEquipment ? "Modify Asset" : "Asset Onboarding"}</h3>
                     <p className="text-[9px] font-bold text-slate-600 uppercase tracking-[0.5em] mt-4">Integrate medical technology into the global node catalog</p>
                  </div>
-                 <button onClick={() => setIsAddEquipmentOpen(false)} className="h-14 w-14 rounded-2xl bg-white/5 flex items-center justify-center text-slate-400 hover:text-white transition-all transform hover:rotate-90">
+                 <button 
+                  onClick={() => {
+                    setIsAddEquipmentOpen(false);
+                    setEditingEquipment(null);
+                  }} 
+                  className="h-14 w-14 rounded-2xl bg-white/5 flex items-center justify-center text-slate-400 hover:text-white transition-all transform hover:rotate-90"
+                >
                     <Plus className="rotate-45" size={28} />
                  </button>
               </div>
@@ -548,8 +705,31 @@ export default function AdminDashboard() {
                     <label className="text-[9px] font-black text-slate-600 uppercase tracking-[0.5em] ml-2">Technological Designation</label>
                     <input type="text" required value={newEquipment.name} onChange={(e) => setNewEquipment({ ...newEquipment, name: e.target.value })} placeholder="e.g., Quantum resonance Scanner X" className="w-full h-16 bg-white/5 border border-white/10 rounded-2xl px-8 text-sm font-bold text-white focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500/50 outline-none transition-all placeholder:text-slate-800" />
                  </div>
-                 {/* ... similar field styling for other fields ... */}
-                 <button className="md:col-span-2 h-20 bg-indigo-600 text-white rounded-[2rem] font-black text-sm uppercase tracking-[0.4em] shadow-2xl shadow-indigo-600/40 active:scale-95 transition-all text-center">Finalize Asset Enrollment</button>
+                 <div className="space-y-4">
+                    <label className="text-[9px] font-black text-slate-600 uppercase tracking-[0.5em] ml-2">Asset Classification</label>
+                    <select value={newEquipment.category} onChange={(e) => setNewEquipment({ ...newEquipment, category: e.target.value })} className="w-full h-16 bg-white/5 border border-white/10 rounded-2xl px-8 text-sm font-bold text-white focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500/50 outline-none transition-all appearance-none">
+                       {["Emergency", "Surgery", "Diagnostics", "Wards", "Laboratory", "General"].map(cat => <option key={cat} value={cat}>{cat}</option>)}
+                    </select>
+                 </div>
+                 <div className="space-y-4">
+                    <label className="text-[9px] font-black text-slate-600 uppercase tracking-[0.5em] ml-2">Market Valuation (₹)</label>
+                    <input type="number" required value={newEquipment.price} onChange={(e) => setNewEquipment({ ...newEquipment, price: e.target.value })} placeholder="Price" className="w-full h-16 bg-white/5 border border-white/10 rounded-2xl px-8 text-sm font-bold text-white focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500/50 outline-none transition-all" />
+                 </div>
+                 <div className="space-y-4">
+                    <label className="text-[9px] font-black text-slate-600 uppercase tracking-[0.5em] ml-2">Inventory Stock</label>
+                    <input type="number" required value={newEquipment.stock} onChange={(e) => setNewEquipment({ ...newEquipment, stock: e.target.value })} placeholder="Available Units" className="w-full h-16 bg-white/5 border border-white/10 rounded-2xl px-8 text-sm font-bold text-white focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500/50 outline-none transition-all" />
+                 </div>
+                 <div className="space-y-4">
+                    <label className="text-[9px] font-black text-slate-600 uppercase tracking-[0.5em] ml-2">Asset Visual (URL)</label>
+                    <input type="text" value={newEquipment.image_url} onChange={(e) => setNewEquipment({ ...newEquipment, image_url: e.target.value })} placeholder="https://unsplash.com/..." className="w-full h-16 bg-white/5 border border-white/10 rounded-2xl px-8 text-sm font-bold text-white focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500/50 outline-none transition-all" />
+                 </div>
+                 <div className="md:col-span-2 space-y-4">
+                    <label className="text-[9px] font-black text-slate-600 uppercase tracking-[0.5em] ml-2">Strategic Description</label>
+                    <textarea value={newEquipment.description} onChange={(e) => setNewEquipment({ ...newEquipment, description: e.target.value })} placeholder="Detail clinical advantages..." className="w-full h-32 bg-white/5 border border-white/10 rounded-2xl px-8 py-4 text-sm font-bold text-white focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500/50 outline-none transition-all resize-none" />
+                 </div>
+                 <button className="md:col-span-2 h-20 bg-indigo-600 text-white rounded-[2rem] font-black text-sm uppercase tracking-[0.4em] shadow-2xl shadow-indigo-600/40 active:scale-95 transition-all text-center">
+                    {editingEquipment ? "Synchronize Updates" : "Finalize Asset Enrollment"}
+                 </button>
               </form>
            </div>
         </div>
