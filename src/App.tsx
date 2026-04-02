@@ -8,6 +8,7 @@ import MarketplacePage from "./pages/MarketplacePage";
 import AdminDashboard from "./pages/AdminDashboard";
 import ManagementDashboard from "./pages/ManagementDashboard";
 import UserDashboard from "./pages/UserDashboard";
+import AboutPage from "./pages/AboutPage";
 
 export default function App() {
   return (
@@ -19,6 +20,7 @@ export default function App() {
           <Route path="/hospitals" element={<HospitalsPage />} />
           <Route path="/hospitals/:id" element={<HospitalDetail />} />
           <Route path="/marketplace" element={<MarketplacePage />} />
+          <Route path="/about" element={<AboutPage />} />
           <Route path="/dashboard/admin" element={<AdminDashboard />} />
           <Route path="/dashboard/management" element={<ManagementDashboard />} />
           <Route path="/dashboard/user" element={<UserDashboard />} />

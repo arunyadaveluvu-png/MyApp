@@ -37,6 +37,7 @@ const Navbar = () => {
   const navLinks = [
     { name: "Home", href: "/" },
     { name: "Hospitals", href: "/hospitals" },
+    { name: "About", href: "/about" },
   ];
 
   if (role === "management" || role === "admin") {
