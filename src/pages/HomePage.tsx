@@ -103,30 +103,50 @@ export default function HomePage() {
                }
              }}
            >
-              {!isVideoPlaying ? (
-                <>
-                  <img 
-                    src="https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80&w=2070" 
-                    className="w-full h-full object-cover opacity-40 blur-sm contrast-125 scale-105 transition-all duration-1000"
-                    alt="Terminal Preview"
-                  />
-                  <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-[#05070A] via-transparent to-[#05070A]/40" />
-                  <div className="absolute bottom-12 left-12 flex flex-col gap-2 pointer-events-none group-hover:translate-x-2 transition-transform duration-500">
-                     <div className="text-[10px] font-black text-indigo-500 uppercase tracking-[0.4em]">Operational Briefing</div>
-                     <h2 className="text-4xl font-black text-white italic tracking-tighter uppercase leading-none">Terminal Alpha-01 Overview</h2>
-                  </div>
-                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-24 w-24 rounded-full bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400 group-hover:scale-125 group-hover:bg-indigo-600 group-hover:text-white transition-all duration-500 shadow-2xl shadow-indigo-600/20">
-                     <Play size={32} className="fill-current" />
-                  </div>
-                </>
-              ) : (
+              <div className="absolute inset-0 z-0">
                 <iframe
-                  src="https://drive.google.com/file/d/1y_tXW_mxESqcdWHzjVNUOluTjoLpeOQ_/preview?autoplay=1"
-                  className="w-full h-full border-none"
+                  src="https://drive.google.com/file/d/1y_tXW_mxESqcdWHzjVNUOluTjoLpeOQ_/preview"
+                  className={cn(
+                    "w-full h-full border-none transition-opacity duration-1000",
+                    isVideoPlaying ? "opacity-100" : "opacity-0 pointer-events-none"
+                  )}
                   allow="autoplay; encrypted-media"
                   allowFullScreen
                   title="MedicoCrew Terminal Overview"
                 />
+              </div>
+              
+              {!isVideoPlaying && (
+                <div className="absolute inset-0 z-10 flex flex-col items-center justify-center">
+                  <img 
+                    src="https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80&w=2070" 
+                    className="absolute inset-0 w-full h-full object-cover opacity-40 blur-sm contrast-125 scale-105 transition-all duration-1000"
+                    alt="Terminal Preview"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#05070A] via-transparent to-[#05070A]/40" />
+                  
+                  <div className="relative z-20 flex flex-col items-center gap-8">
+                    <div className="h-24 w-24 rounded-full bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400 group-hover:scale-125 group-hover:bg-indigo-600 group-hover:text-white transition-all duration-500 shadow-2xl shadow-indigo-600/20">
+                       <Play size={32} className="fill-current" />
+                    </div>
+                    <div className="text-center group-hover:translate-y-[-4px] transition-transform duration-500">
+                       <div className="text-[10px] font-black text-indigo-500 uppercase tracking-[0.4em] mb-2 text-center">Operational Briefing</div>
+                       <h2 className="text-4xl font-black text-white italic tracking-tighter uppercase leading-none">Terminal Alpha-01 Overview</h2>
+                    </div>
+                  </div>
+
+                  <div className="absolute bottom-12 left-1/2 -translate-x-1/2 z-20">
+                     <a 
+                       href="https://drive.google.com/file/d/1y_tXW_mxESqcdWHzjVNUOluTjoLpeOQ_/view?usp=sharing"
+                       target="_blank"
+                       rel="noopener noreferrer"
+                       className="text-[9px] font-black text-slate-600 uppercase tracking-[0.3em] hover:text-indigo-400 transition-colors border-b border-white/5 pb-1"
+                       onClick={(e) => e.stopPropagation()}
+                     >
+                       Launch External Interface
+                     </a>
+                  </div>
+                </div>
               )}
            </div>
         </div>
