@@ -97,15 +97,26 @@ export default function HomePage() {
         <div className="container mx-auto px-6 lg:px-10">
            <div 
              className="relative group rounded-[3rem] overflow-hidden border border-white/5 shadow-4xl aspect-video bg-[#0A0D12] animate-in fade-in zoom-in duration-1000 cursor-pointer"
-             onClick={() => !isVideoPlaying && setIsVideoPlaying(true)}
+             onClick={(e) => {
+               const video = e.currentTarget.querySelector('video');
+               if (video && !isVideoPlaying) {
+                 video.muted = false;
+                 video.controls = true;
+                 video.play();
+                 setIsVideoPlaying(true);
+               }
+             }}
            >
-              <iframe
-                src={`https://drive.google.com/file/d/1y_tXW_mxESqcdWHzjVNUOluTjoLpeOQ_/preview${isVideoPlaying ? '?autoplay=1' : ''}`}
+              <video
+                src="https://drive.google.com/uc?export=download&id=1y_tXW_mxESqcdWHzjVNUOluTjoLpeOQ_"
                 className={cn(
-                  "w-full h-full border-none transition-all duration-1000",
+                  "w-full h-full object-cover transition-all duration-1000",
                   isVideoPlaying ? "opacity-100 scale-100" : "opacity-40 scale-105 blur-sm contrast-125"
                 )}
-                allow="autoplay; fullscreen"
+                autoPlay
+                muted
+                loop
+                playsInline
                 title="MedicoCrew Terminal Overview"
               />
               
