@@ -549,8 +549,7 @@ export default function HospitalDetail() {
                   <Phone size={20} />
                 </div>
                 <div>
-                  <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Direct Helpline</div>
-                  <div className="text-sm font-bold text-slate-700">{hospital.phone || "+91 (555) 000-1111"}</div>
+                  <div className="text-sm font-bold text-slate-700">{hospital.phone || "+91 91234 56789"}</div>
                 </div>
               </div>
               <div className="flex items-center gap-4">
@@ -680,7 +679,7 @@ export default function HospitalDetail() {
               
               <div className="space-y-4">
                  <a 
-                   href={`tel:${hospital.phone || "+915550001111"}`} 
+                   href={`tel:${hospital.phone || "+919123456789"}`} 
                    className="flex items-center justify-between p-5 rounded-2xl bg-slate-50 border border-slate-100 hover:border-primary-200 transition-all group"
                  >
                     <div className="flex items-center gap-4">

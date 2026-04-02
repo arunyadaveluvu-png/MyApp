@@ -12,16 +12,31 @@
   --color-primary-800: #1e40af;
   --color-primary-900: #1e3a8a;
   --color-primary-950: #172554;
+
+  --color-teal-50: #f0fdfa;
+  --color-teal-500: #14b8a6;
+  --color-teal-600: #0d9488;
+  --color-teal-700: #0f766e;
+
+  --color-indigo-50: #eef2ff;
+  --color-indigo-500: #6366f1;
+  --color-indigo-600: #4f46e5;
+  --color-indigo-700: #4338ca;
+
+  --color-navy: #05070A;
+  --color-navy-light: #0A0D12;
   
-  --font-sans: "Inter", system-ui, -apple-system, sans-serif;
+  --font-sans: "Inter", "Poppins", system-ui, -apple-system, sans-serif;
   
-  --radius-3xl: 2rem;
-  --radius-4xl: 3rem;
+  --radius-xl: 1rem;
+  --radius-2xl: 1.5rem;
+  --radius-3xl: 2.5rem;
+  --radius-4xl: 3.5rem;
 }
 
 @layer base {
   body {
-    @apply bg-white text-slate-900 selection:bg-primary-100 selection:text-primary-900;
+    @apply bg-white text-slate-900 selection:bg-primary-100 selection:text-primary-900 antialiased;
   }
 }
 
@@ -32,23 +47,30 @@
   }
   
   .glass {
-    @apply bg-white/70 backdrop-blur-xl border border-white/20;
+    @apply bg-white/70 backdrop-blur-3xl border border-white/20;
+  }
+
+  .glass-dark {
+    @apply bg-black/40 backdrop-blur-3xl border border-white/10;
   }
   
   .shadow-soft {
     box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.05);
   }
   
-  .shadow-xl-soft {
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.08);
+  .shadow-premium {
+    box-shadow: 0 32px 64px -12px rgba(0, 0, 0, 0.08);
   }
 
-  .text-gradient {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary-600 to-indigo-600;
+  .text-gradient-indigo {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 to-violet-500;
+  }
+
+  .text-gradient-teal {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-teal-500 to-emerald-500;
   }
 }
 
-/* Custom animations */
 @keyframes float {
   0% { transform: translateY(0px); }
   50% { transform: translateY(-10px); }
@@ -57,4 +79,14 @@
 
 .animate-float {
   animation: float 4s ease-in-out infinite;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  @apply bg-white/10 rounded-full;
 }

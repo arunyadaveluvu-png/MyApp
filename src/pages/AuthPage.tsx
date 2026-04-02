@@ -1,7 +1,7 @@
 import { useEffect, useState, Suspense } from "react";
 import { 
   Stethoscope, Mail, Lock, User, ShieldCheck, 
-  ChevronRight, Building2, Loader2
+  ChevronRight, Building2, Loader2, Eye, EyeOff
 } from "lucide-react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -21,6 +21,7 @@ function AuthForm() {
   const [error, setError] = useState<string | null>(null);
   const [isNewHospital, setIsNewHospital] = useState(false);
   const [hospitalName, setHospitalName] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -271,13 +272,20 @@ function AuthForm() {
             <div className="relative">
               <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
               <input
-                type="password"
+                type={showPassword ? "text" : "password"}
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 pl-11 pr-4 text-sm font-medium transition-all focus:border-primary-500 focus:outline-none focus:ring-4 focus:ring-primary-500/10"
+                className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 pl-11 pr-12 text-sm font-medium transition-all focus:border-primary-500 focus:outline-none focus:ring-4 focus:ring-primary-500/10"
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-primary-600 transition-colors"
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
             </div>
           </div>
 

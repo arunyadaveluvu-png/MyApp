@@ -1,14 +1,16 @@
 import { useEffect, useState } from "react";
 import { 
-  User, Mail, Calendar, Star, MessageSquare, Clock, 
-  Settings, LogOut, Bookmark, ShieldCheck, History, Hospital,
-  Ticket, CheckCircle2, ChevronRight, Stethoscope, 
+  User, Calendar, Star, MessageSquare, Clock, 
+  Bookmark, ShieldCheck, History, LogOut,
+  CheckCircle2, ChevronRight, Stethoscope, 
   Activity, FileText, CreditCard, Bell, Search, Filter
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/components/Toast";
+
+const FALLBACK_HOSPITAL = "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&q=80&w=2053";
 
 export default function UserDashboard() {
   const [activeTab, setActiveTab] = useState("appointments");
@@ -182,8 +184,12 @@ export default function UserDashboard() {
                   >
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
                       <div className="flex items-center gap-6">
-                        <div className="h-20 w-20 rounded-3xl bg-teal-50 flex items-center justify-center text-teal-600 border border-teal-100 shadow-inner group-hover:scale-110 transition-transform duration-500">
-                          <Hospital size={36} strokeWidth={1.5} />
+                        <div className="h-24 w-24 rounded-3xl bg-slate-100 overflow-hidden border border-slate-200 shadow-inner group-hover:scale-110 transition-transform duration-500">
+                           <img 
+                             src={app.hospitals?.image_url || FALLBACK_HOSPITAL} 
+                             alt={app.hospitals?.name} 
+                             className="w-full h-full object-cover filter brightness-90 group-hover:brightness-100 transition-all"
+                           />
                         </div>
                         <div>
                           <div className="flex items-center gap-2 mb-2">
@@ -288,8 +294,12 @@ export default function UserDashboard() {
                   <div key={review.id} className="bg-white rounded-[2.5rem] p-10 border border-slate-100 shadow-sm hover:shadow-xl transition-all group">
                     <div className="flex items-start justify-between">
                       <div className="flex items-center gap-4">
-                         <div className="h-14 w-14 rounded-2xl bg-teal-50 flex items-center justify-center text-teal-600 border border-teal-100 shadow-sm">
-                           <Hospital size={28} />
+                         <div className="h-14 w-14 rounded-2xl bg-slate-100 overflow-hidden border border-slate-200 shadow-sm">
+                            <img 
+                              src={review.hospitals?.image_url || FALLBACK_HOSPITAL} 
+                              alt={review.hospitals?.name} 
+                              className="w-full h-full object-cover filter brightness-90 group-hover:brightness-100 transition-all"
+                            />
                          </div>
                          <div>
                             <h4 className="font-black text-slate-900 group-hover:text-teal-600 transition-colors">{review.hospitals?.name}</h4>

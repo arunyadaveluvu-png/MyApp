@@ -1,5 +1,8 @@
 import { Link, useNavigate } from "react-router-dom";
-import { Hospital, LayoutDashboard, LogIn, LogOut, Menu, Search, X } from "lucide-react";
+import { 
+  Hospital, LayoutDashboard, LogIn, LogOut, Menu, Search, X, 
+  Bell
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabase";
@@ -7,12 +10,16 @@ import { useToast } from "@/components/Toast";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const [session, setSession] = useState<any>(null);
   const [role, setRole] = useState<string | null>(null);
   const navigate = useNavigate();
   const { showToast } = useToast();
 
   useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 20);
+    window.addEventListener("scroll", handleScroll);
+    
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       if (session) setRole(session.user.user_metadata?.role || "user");
@@ -23,21 +30,24 @@ const Navbar = () => {
       if (session) setRole(session.user.user_metadata?.role || "user");
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      subscription.unsubscribe();
+      window.removeEventListener("scroll", handleScroll);
+    };
   }, []);
 
   const handleLogout = async () => {
-    showToast("Signing out...", "loading");
+    showToast("Terminating session...", "loading");
     await supabase.auth.signOut();
-    showToast("Signed out successfully", "success");
+    showToast("Session terminated successfully", "success");
     setIsOpen(false);
     navigate("/");
   };
 
   const navLinks = [
-    { name: "Home", href: "/" },
+    { name: "Platform", href: "/" },
     { name: "Hospitals", href: "/hospitals" },
-    { name: "About", href: "/about" },
+    { name: "Global Network", href: "/about" },
   ];
 
   if (role === "management" || role === "admin") {
@@ -50,127 +60,146 @@ const Navbar = () => {
       ? "/dashboard/management" 
       : "/dashboard/user";
 
+
   return (
-    <nav className="sticky top-0 z-50 w-full border-b bg-white/80 backdrop-blur-md">
-      <div className="container mx-auto flex h-16 items-center justify-between px-4">
-        <Link to="/" className="flex items-center gap-2 group">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-600 text-white transition-transform group-hover:scale-110">
-            <Hospital size={24} />
+    <nav className={cn(
+      "sticky top-0 z-[100] w-full transition-all duration-500",
+      scrolled 
+        ? "h-20 bg-white/80 backdrop-blur-2xl border-b border-slate-200/50 shadow-xl shadow-slate-900/5" 
+        : "h-24 bg-transparent border-b border-transparent"
+    )}>
+      <div className="container mx-auto h-full flex items-center justify-between px-6 lg:px-10">
+        
+        {/* Brand Logo */}
+        <Link to="/" className="flex items-center gap-4 group">
+          <div className="h-12 w-12 bg-indigo-600 rounded-[1rem] flex items-center justify-center text-white shadow-2xl shadow-indigo-600/30 group-hover:scale-110 transition-all duration-500 transform group-hover:rotate-6">
+            <Hospital size={28} />
           </div>
-          <span className="text-xl font-bold tracking-tight text-slate-900 group-hover:text-primary-700 transition-colors">
-            Medico<span className="text-primary-600">Crew</span>
-          </span>
+          <div className="flex flex-col">
+            <span className="text-2xl font-black tracking-tighter text-slate-900 leading-none italic">MedicoCrew</span>
+            <span className="text-[10px] font-black text-indigo-500 uppercase tracking-[0.3em] mt-1">Unified Command</span>
+          </div>
         </Link>
 
-        {/* Desktop Nav */}
-        <div className="hidden md:flex items-center gap-8">
+        {/* Global Navigation - Desktop */}
+        <div className="hidden lg:flex items-center gap-10">
           {navLinks.map((link) => (
             <Link
               key={link.name}
               to={link.href}
-              className="text-sm font-medium text-slate-600 hover:text-primary-600 transition-colors"
+              className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 hover:text-indigo-600 transition-all relative group py-2"
             >
               {link.name}
+              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-indigo-500 transition-all group-hover:w-full rounded-full" />
             </Link>
           ))}
         </div>
 
-        <div className="hidden md:flex items-center gap-4">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+        {/* Action Center - Desktop */}
+        <div className="hidden lg:flex items-center gap-6">
+          <div className="relative group">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500 transition-colors" size={16} />
             <input
               type="text"
-              placeholder="Search hospitals..."
-              className="h-10 w-64 rounded-full border border-slate-200 bg-slate-50 pl-10 pr-4 text-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 transition-all"
+              placeholder="Query facilities..."
+              className="h-12 w-64 rounded-2xl bg-slate-50 border border-slate-200 pl-12 pr-4 text-xs font-bold text-slate-900 focus:bg-white focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all outline-none placeholder:text-slate-400 placeholder:italic"
             />
           </div>
           
           {session ? (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-4">
+              <button className="h-12 w-12 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-center text-slate-500 hover:text-indigo-600 hover:bg-white transition-all">
+                 <Bell size={20} />
+              </button>
               <Link
                 to={dashboardHref}
-                className="flex items-center gap-2 rounded-full bg-slate-900 px-6 py-2 text-sm font-medium text-white shadow-lg shadow-slate-900/10 hover:bg-slate-800 transition-all active:scale-95"
+                className="h-12 px-8 rounded-2xl bg-slate-900 text-[11px] font-black uppercase tracking-[0.2em] text-white shadow-xl shadow-slate-900/20 hover:bg-indigo-600 hover:shadow-indigo-600/30 transition-all active:scale-95 flex items-center gap-3"
               >
-                <LayoutDashboard size={18} />
-                Dashboard
+                <LayoutDashboard size={18} /> Dashboard
               </Link>
               <button
                 onClick={handleLogout}
-                className="flex items-center justify-center h-10 w-10 rounded-full border border-slate-200 text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-all active:scale-95"
-                title="Logout"
+                className="h-12 w-12 rounded-2xl border border-slate-200 text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-all active:scale-95 flex items-center justify-center"
               >
-                <LogOut size={18} />
+                <LogOut size={20} />
               </button>
             </div>
           ) : (
             <Link
               to="/auth"
-              className="flex items-center gap-2 rounded-full bg-primary-600 px-6 py-2 text-sm font-medium text-white shadow-lg shadow-primary-500/30 hover:bg-primary-700 hover:shadow-primary-600/40 transition-all active:scale-95"
+              className="h-12 px-10 rounded-2xl bg-indigo-600 text-[11px] font-black uppercase tracking-[0.2em] text-white shadow-xl shadow-indigo-600/30 hover:bg-indigo-500 hover:shadow-indigo-600/40 transition-all active:scale-95 flex items-center gap-3"
             >
-              <LogIn size={18} />
-              Login
+              <LogIn size={18} /> Portal Access
             </Link>
           )}
         </div>
 
-        {/* Mobile Toggle */}
+        {/* Mobile Command Toggle */}
         <button
-          className="rounded-lg p-2 md:hidden hover:bg-slate-100 transition-colors"
+          className="lg:hidden h-12 w-12 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-center text-slate-900 transition-all active:scale-90"
           onClick={() => setIsOpen(!isOpen)}
         >
           {isOpen ? <X size={24} /> : <Menu size={24} />}
         </button>
       </div>
 
-      {/* Mobile Menu */}
-      <div
-        className={cn(
-          "absolute top-16 left-0 w-full bg-white border-b p-4 md:hidden transition-all duration-300 transform",
-          isOpen ? "translate-y-0 opacity-100 pointer-events-auto" : "-translate-y-4 opacity-0 pointer-events-none"
-        )}
-      >
-        <div className="flex flex-col gap-4">
-          {navLinks.map((link) => (
-            <Link
-              key={link.name}
-              to={link.href}
-              className="text-lg font-medium text-slate-700 p-2 hover:bg-slate-50 rounded-lg"
-              onClick={() => setIsOpen(false)}
-            >
-              {link.name}
-            </Link>
-          ))}
-          {!session && (
-            <Link
-              to="/auth"
-              className="flex items-center justify-center gap-2 rounded-lg bg-primary-600 py-3 text-white font-medium"
-              onClick={() => setIsOpen(false)}
-            >
-              <LogIn size={20} />
-              Login
-            </Link>
-          )}
-          {session && (
-            <>
-              <Link
-                to={dashboardHref}
-                className="flex items-center justify-center gap-2 rounded-lg bg-slate-900 py-3 text-white font-medium"
-                onClick={() => setIsOpen(false)}
-              >
-                <LayoutDashboard size={20} />
-                Dashboard
+      {/* Mobile Command Center */}
+      {isOpen && (
+        <div className="absolute top-0 left-0 w-full h-screen bg-white z-[200] p-10 animate-in fade-in slide-in-from-top duration-500">
+           <div className="flex items-center justify-between mb-20">
+              <Link to="/" onClick={() => setIsOpen(false)} className="flex items-center gap-4">
+                 <div className="h-12 w-12 bg-indigo-600 rounded-[1rem] flex items-center justify-center text-white">
+                    <Hospital size={28} />
+                 </div>
+                 <span className="text-2xl font-black italic tracking-tighter">MedicoCrew</span>
               </Link>
-              <button
-                onClick={handleLogout}
-                className="flex items-center justify-center gap-2 rounded-lg border-2 border-slate-100 py-3 text-slate-600 font-medium hover:bg-rose-50 hover:text-rose-600 hover:border-rose-100 transition-all"
-              >
-                <LogOut size={20} />
-                Logout
+              <button onClick={() => setIsOpen(false)} className="h-12 w-12 rounded-2xl bg-slate-50 flex items-center justify-center">
+                 <X size={24} />
               </button>
-            </>
-          )}
+           </div>
+
+           <div className="space-y-8">
+              {navLinks.map((link) => (
+                <Link
+                  key={link.name}
+                  to={link.href}
+                  className="block text-4xl font-black tracking-tighter text-slate-900 border-b border-slate-100 pb-6 hover:text-indigo-600 transition-colors"
+                  onClick={() => setIsOpen(false)}
+                >
+                  {link.name}
+                </Link>
+              ))}
+              
+              <div className="pt-10 space-y-6">
+                 {session ? (
+                   <>
+                      <Link
+                        to={dashboardHref}
+                        className="w-full h-16 rounded-[1.5rem] bg-indigo-600 text-white font-black uppercase tracking-widest flex items-center justify-center gap-3 shadow-2xl shadow-indigo-600/20"
+                        onClick={() => setIsOpen(false)}
+                      >
+                         <LayoutDashboard size={20} /> Access Dashboard
+                      </Link>
+                      <button
+                        onClick={handleLogout}
+                        className="w-full h-16 rounded-[1.5rem] border-2 border-rose-100 text-rose-600 font-black uppercase tracking-widest flex items-center justify-center gap-3"
+                      >
+                         <LogOut size={20} /> Terminate Session
+                      </button>
+                   </>
+                 ) : (
+                   <Link
+                     to="/auth"
+                     className="w-full h-16 rounded-[1.5rem] bg-indigo-600 text-white font-black uppercase tracking-widest flex items-center justify-center gap-3 shadow-2xl shadow-indigo-600/20"
+                     onClick={() => setIsOpen(false)}
+                   >
+                     <LogIn size={20} /> Enterprise Login
+                   </Link>
+                 )}
+              </div>
+           </div>
         </div>
-      </div>
+      )}
     </nav>
   );
 };

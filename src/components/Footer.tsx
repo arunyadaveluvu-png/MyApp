@@ -57,7 +57,7 @@ const Footer = () => {
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-100 text-primary-600">
                   <Phone size={16} />
                 </div>
-                +1 (555) 000-HEALTH
+                +91 91234 56789
               </li>
               <li className="flex items-center gap-3">
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-100 text-primary-600">

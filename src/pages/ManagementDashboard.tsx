@@ -1,19 +1,21 @@
 import { useEffect, useState } from "react";
 import { 
-  Building, Activity, Star, 
+  Building, Activity, 
   Settings, Bell, Search, Plus, Calendar, MessageSquare,
-  ClipboardList, Package, Wallet, ShieldCheck,
-  AlertCircle, Loader2, ArrowRight, Mail, Phone, Users,
-  Heart, Database, BarChart3, TrendingUp, Filter, Download
+  Wallet, ShieldCheck,
+  Mail, Phone, Users,
+  Database, BarChart3, Download, ChevronRight
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { 
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
-  Cell, AreaChart, Area
+  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
+  AreaChart, Area
 } from "recharts";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/components/Toast";
+
+const FALLBACK_EQUIPMENT = "https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&q=80&w=2070";
 
 const reviewCategories = [
   { key: "equipment_quality", label: "Equipment" },
@@ -31,14 +33,7 @@ export default function ManagementDashboard() {
   const [reviews, setReviews] = useState<any[]>([]);
   const [inventory, setInventory] = useState<any[]>([]);
   const [staff, setStaff] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-  
-  // Onboarding State
-  const [onboardingMode, setOnboardingMode] = useState<"select" | "create" | null>(null);
-  const [hospitalsList, setHospitalsList] = useState<any[]>([]);
-  const [onboardingForm, setOnboardingForm] = useState({ hospital_id: "" });
-  const [hospital_name, setHospitalName] = useState("");
   
   // Hospital Settings States
   const [hospitalForm, setHospitalForm] = useState<any>({
@@ -70,16 +65,10 @@ export default function ManagementDashboard() {
 
   useEffect(() => {
     fetchData();
-    fetchHospitals();
   }, []);
 
-  const fetchHospitals = async () => {
-    const { data } = await supabase.from("hospitals").select("id, name");
-    if (data) setHospitalsList(data);
-  };
-
   const fetchData = async () => {
-    setIsLoading(true);
+    setIsSaving(true);
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) {
       navigate("/auth");
@@ -122,7 +111,7 @@ export default function ManagementDashboard() {
       }
     }
 
-    setIsLoading(false);
+    setIsSaving(false);
   };
 
   const updateHospital = async (e: React.FormEvent) => {
@@ -240,7 +229,7 @@ export default function ManagementDashboard() {
                <div className="h-10 w-10 bg-gradient-to-br from-teal-400 to-teal-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-teal-500/20 group-hover:scale-110 transition-all duration-500">
                  <Activity size={24} />
                </div>
-               <span className="text-xl font-black tracking-tighter text-white italic">MedicoPro</span>
+               <span className="text-xl font-black tracking-tighter text-white italic">MedicoCrew</span>
              </Link>
           </div>
 
@@ -401,7 +390,7 @@ export default function ManagementDashboard() {
                          <div className="h-2 w-2 bg-rose-500 rounded-full animate-pulse shadow-lg shadow-rose-500/20" />
                       </div>
                       <div className="space-y-6 flex-grow">
-                         {appointments.slice(0, 5).map((app, i) => (
+                         {appointments.slice(0, 5).map((app) => (
                            <div key={app.id} className="flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-white/5 hover:border-teal-500/20 transition-all group">
                               <div className="flex items-center gap-4">
                                  <div className="h-10 w-10 rounded-xl bg-slate-900 flex items-center justify-center text-[10px] font-black text-white border border-white/5">
@@ -545,8 +534,12 @@ export default function ManagementDashboard() {
                       {inventory.map(item => (
                         <div key={item.id} className="bg-slate-900/50 rounded-[2rem] p-8 border border-white/5 group hover:border-teal-500/20 transition-all">
                            <div className="flex items-start justify-between mb-8">
-                              <div className="h-16 w-16 bg-teal-500/5 rounded-2xl border border-teal-500/20 flex items-center justify-center text-teal-400 text-2xl font-black italic shadow-inner">
-                                 {item.equipment?.name?.[0]}
+                              <div className="h-16 w-16 bg-slate-800 rounded-2xl border border-white/10 overflow-hidden shadow-inner">
+                                 <img 
+                                   src={item.equipment?.image_url || FALLBACK_EQUIPMENT} 
+                                   alt={item.equipment?.name}
+                                   className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-all"
+                                 />
                               </div>
                               <div className="text-right">
                                  <div className="text-[9px] font-black text-slate-500 uppercase tracking-widest">In Stock</div>

@@ -1,17 +1,20 @@
 import { useEffect, useState } from "react";
 import { 
-  Users, Hospital, Package, DollarSign, TrendingUp, ArrowUpRight, ArrowDownRight, 
-  Plus, MoreHorizontal, Search, LayoutGrid, List, FileDown, Trash2, Edit3, Check, X,
-  Shield, Globe, Database, CreditCard, Activity, BarChart2, Bell, Settings
+  Hospital, ArrowUpRight, ArrowDownRight, 
+  Plus, Search, FileDown, Filter,
+  Shield, Globe, Database, CreditCard, Activity, Bell
 } from "lucide-react";
 import { 
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
-  AreaChart, Area, Cell, PieChart, Pie, BarChart, Bar
+  AreaChart, Area, Cell, PieChart, Pie
 } from "recharts";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/components/Toast";
 import { useNavigate, Link } from "react-router-dom";
+
+const FALLBACK_HOSPITAL = "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&q=80&w=2053";
+const FALLBACK_EQUIPMENT = "https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&q=80&w=2070";
 
 const salesData = [
   { name: "Jan", sales: 4000, revenue: 120000 },
@@ -34,7 +37,6 @@ const COLORS = ["#6366f1", "#8b5cf6", "#ec4899", "#f43f5e"];
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("overview");
-  const [view, setView] = useState<"grid" | "list">("grid");
   const [counts, setCounts] = useState({ users: 0, hospitals: 0, equipment: 0, revenue: 0 });
   const [recentOrders, setRecentOrders] = useState<any[]>([]);
   const [inventory, setInventory] = useState<any[]>([]);
@@ -42,8 +44,6 @@ export default function AdminDashboard() {
   // Modals & Forms
   const [isAddAdminOpen, setIsAddAdminOpen] = useState(false);
   const [isAddEquipmentOpen, setIsAddEquipmentOpen] = useState(false);
-  const [editStockId, setEditStockId] = useState<string | null>(null);
-  const [tempStockValue, setTempStockValue] = useState<string>("");
   const [newAdmin, setNewAdmin] = useState({ name: "", email: "" });
   const [newEquipment, setNewEquipment] = useState({ 
     name: "", category: "Emergency", price: "", stock: "0", supplier: "", description: "", image_url: "" 
@@ -86,44 +86,6 @@ export default function AdminDashboard() {
       showToast(`${newEquipment.name} cataloged in the ecosystem.`, "success");
       setIsAddEquipmentOpen(false);
       setNewEquipment({ name: "", category: "Emergency", price: "", stock: "0", supplier: "", description: "", image_url: "" });
-      fetchInventory();
-      fetchStats();
-    } catch (err: any) {
-      hideToast(toastId);
-      showToast(err.message, "error");
-    }
-  };
-
-  const handleUpdateStock = async (id: string, name: string) => {
-    const newStock = parseInt(tempStockValue);
-    if (isNaN(newStock)) {
-      showToast("Invalid stock quantity.", "error");
-      return;
-    }
-
-    const toastId = showToast(`Syncing inventory for ${name}...`, "loading");
-    try {
-      const { error } = await supabase.from("equipment").update({ stock: newStock }).eq("id", id);
-      if (error) throw error;
-      hideToast(toastId);
-      showToast(`${name} inventory adjusted to ${newStock}.`, "success");
-      setEditStockId(null);
-      fetchInventory();
-    } catch (err: any) {
-      hideToast(toastId);
-      showToast(err.message, "error");
-    }
-  };
-
-  const handleDeleteEquipment = async (id: string, name: string) => {
-    if (!confirm(`Permanently decommission ${name} from the global catalog?`)) return;
-    
-    const toastId = showToast("Decommissioning asset...", "loading");
-    try {
-      const { error } = await supabase.from("equipment").delete().eq("id", id);
-      if (error) throw error;
-      hideToast(toastId);
-      showToast(`${name} removed from registry.`, "success");
       fetchInventory();
       fetchStats();
     } catch (err: any) {
@@ -217,7 +179,7 @@ export default function AdminDashboard() {
             <div className="h-10 w-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-2xl shadow-indigo-600/30 group-hover:scale-110 transition-all duration-500">
               <Shield size={24} />
             </div>
-            <span className="text-xl font-black tracking-tighter text-white italic">MedicoGlobal</span>
+            <span className="text-xl font-black tracking-tighter text-white italic">MedicoCrew</span>
           </Link>
           
           <div className="hidden lg:flex items-center gap-8 text-[10px] font-black uppercase tracking-[0.3em]">
@@ -425,8 +387,12 @@ export default function AdminDashboard() {
                            <tr key={order.id} className="group hover:bg-white/[0.03] transition-colors">
                               <td className="px-12 py-6">
                                  <div className="flex items-center gap-4">
-                                    <div className="h-10 w-10 rounded-xl bg-indigo-500/10 flex items-center justify-center text-indigo-400 border border-indigo-500/20 font-black text-xs">
-                                       {order.hospitals?.name?.[0]}
+                                    <div className="h-10 w-10 rounded-xl bg-slate-900 overflow-hidden border border-white/10 shadow-inner">
+                                       <img 
+                                         src={order.hospitals?.image_url || FALLBACK_HOSPITAL} 
+                                         alt={order.hospitals?.name}
+                                         className="w-full h-full object-cover filter brightness-90 group-hover:brightness-100 transition-all"
+                                       />
                                     </div>
                                     <span className="text-sm font-black text-white">{order.hospitals?.name}</span>
                                  </div>
@@ -460,17 +426,18 @@ export default function AdminDashboard() {
                    <div key={item.id} className="bg-[#0A0D12] rounded-[3rem] p-10 border border-white/5 shadow-2xl relative group overflow-hidden hover:border-indigo-500/30 transition-all">
                       <div className="absolute top-0 right-0 p-8 opacity-0 group-hover:opacity-100 transition-opacity">
                          <div className="flex gap-2">
-                            <button onClick={() => setEditStockId(item.id)} className="h-10 w-10 rounded-xl bg-white/5 text-slate-400 flex items-center justify-center hover:text-white transition-all">
-                               <Edit3 size={18} />
-                            </button>
-                            <button onClick={() => handleDeleteEquipment(item.id, item.name)} className="h-10 w-10 rounded-xl bg-rose-500/10 text-rose-500 flex items-center justify-center hover:bg-rose-500 hover:text-white transition-all">
-                               <Trash2 size={18} />
-                            </button>
+                            <div className="h-10 px-4 rounded-xl bg-white/5 text-[8px] font-black uppercase tracking-widest text-slate-500 flex items-center justify-center border border-white/5">
+                               Immutable Asset
+                            </div>
                          </div>
                       </div>
 
-                      <div className="h-20 w-20 bg-indigo-500/5 rounded-3xl border border-indigo-500/20 flex items-center justify-center text-indigo-400 text-3xl font-black italic shadow-inner mb-8 transform group-hover:scale-110 transition-transform duration-500">
-                         {item.name?.[0]}
+                      <div className="h-20 w-20 bg-slate-900 rounded-3xl border border-white/10 overflow-hidden shadow-inner mb-8 transform group-hover:scale-110 transition-transform duration-500">
+                         <img 
+                           src={item.image_url || FALLBACK_EQUIPMENT} 
+                           alt={item.name}
+                           className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-all"
+                         />
                       </div>
                       
                       <h4 className="text-xl font-black text-white uppercase tracking-tight leading-tight">{item.name}</h4>
