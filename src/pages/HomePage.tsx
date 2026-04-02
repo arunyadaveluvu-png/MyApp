@@ -72,6 +72,35 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Video Showcase Section */}
+      <section className="bg-white pb-24">
+        <div className="container mx-auto px-4">
+          <div className="max-w-5xl mx-auto">
+            <div className="relative group">
+              {/* Decorative Background Elements */}
+              <div className="absolute -inset-4 bg-gradient-to-tr from-primary-500/10 to-emerald-500/10 rounded-[3rem] blur-2xl opacity-50 group-hover:opacity-100 transition-opacity duration-700" />
+              
+              {/* Premium Video Container */}
+              <div className="relative aspect-video w-full rounded-[2.5rem] bg-slate-900 overflow-hidden shadow-2xl border border-slate-100 ring-1 ring-slate-900/5 transition-transform duration-700 group-hover:scale-[1.01]">
+                <iframe
+                  src="https://drive.google.com/file/d/1y_tXW_mxESqcdWHzjVNUOluTjoLpeOQ_/preview"
+                  className="absolute inset-0 w-full h-full border-none"
+                  allow="autoplay"
+                  title="MedicoCrew Overview Video"
+                />
+              </div>
+              
+              {/* Video Tagline */}
+              <div className="mt-8 flex items-center justify-center gap-3 text-xs font-black uppercase tracking-[0.3em] text-slate-400">
+                <span className="h-[1px] w-12 bg-slate-200" />
+                Experience MedicoCrew In 60 Seconds
+                <span className="h-[1px] w-12 bg-slate-200" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Stats Section */}
       <section className="bg-slate-50 py-16 border-y border-slate-100">
         <div className="container mx-auto px-4">
