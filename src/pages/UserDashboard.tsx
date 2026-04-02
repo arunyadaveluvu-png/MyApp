@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import { 
   User, Mail, Calendar, Star, MessageSquare, Clock, 
   Settings, LogOut, Bookmark, ShieldCheck, History, Hospital,
-  Ticket, CheckCircle2, ChevronRight
+  Ticket, CheckCircle2, ChevronRight, Stethoscope, 
+  Activity, FileText, CreditCard, Bell, Search, Filter
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -10,7 +11,7 @@ import { supabase } from "@/lib/supabase";
 import { useToast } from "@/components/Toast";
 
 export default function UserDashboard() {
-  const [activeTab, setActiveTab] = useState("reviews");
+  const [activeTab, setActiveTab] = useState("appointments");
   const [profile, setProfile] = useState<any>(null);
   const [reviews, setReviews] = useState<any[]>([]);
   const [appointments, setAppointments] = useState<any[]>([]);
@@ -34,7 +35,6 @@ export default function UserDashboard() {
       return;
     }
 
-    // Fetch from the NEW user_profiles table
     const { data: prof } = await supabase
       .from("user_profiles")
       .select("*")
@@ -43,18 +43,13 @@ export default function UserDashboard() {
     
     setProfile(prof);
 
-    // Fetch user reviews with hospital names
     const { data: revs } = await supabase
       .from("reviews")
-      .select(`
-        *,
-        hospitals (name)
-      `)
+      .select(`*, hospitals (name)`)
       .eq("user_id", user.id);
 
     if (revs) setReviews(revs);
 
-    // Fetch user appointments
     const { data: apps } = await supabase
       .from("appointments")
       .select("*, hospitals(name)")
@@ -72,226 +67,295 @@ export default function UserDashboard() {
   };
 
   return (
-    <div className="bg-slate-50 min-h-screen pb-24">
-      {/* Profile Header */}
-      <section className="bg-white border-b pt-12 pb-8">
-        <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row items-center gap-6">
-            <div className="relative group">
-              <div className="h-28 w-28 rounded-full bg-primary-100 flex items-center justify-center text-primary-600 ring-4 ring-primary-50 transition-all group-hover:scale-105">
-                <User size={56} strokeWidth={1.5} />
-              </div>
-              <div className="absolute bottom-1 right-1 h-8 w-8 rounded-full bg-emerald-500 border-4 border-white flex items-center justify-center text-white">
-                <ShieldCheck size={14} />
-              </div>
+    <div className="bg-[#F8FAFB] min-h-screen font-sans selection:bg-teal-100 selection:text-teal-900">
+      {/* Top Bar - Clean & Minimal */}
+      <nav className="sticky top-0 z-30 bg-white/80 backdrop-blur-xl border-b border-slate-100 px-6 h-20 flex items-center justify-between">
+        <div className="flex items-center gap-8">
+          <Link to="/" className="flex items-center gap-2 group">
+            <div className="h-10 w-10 bg-teal-500 rounded-xl flex items-center justify-center text-white shadow-lg shadow-teal-500/20 group-hover:scale-105 transition-transform">
+              <Stethoscope size={24} />
             </div>
-            
-            <div className="flex-grow text-center md:text-left">
-              <h1 className="text-3xl font-black tracking-tight text-slate-900 leading-tight">
-                {profile?.full_name || "Arun Kumar"}
-              </h1>
-              <div className="mt-2 flex flex-wrap items-center justify-center md:justify-start gap-4 text-sm font-medium text-slate-500">
-                <div className="flex items-center gap-1.5">
-                  <Mail size={16} />
-                  {profile?.email || "arun@example.com"}
-                </div>
-                <div className="flex items-center gap-1.5 text-emerald-600 font-bold">
-                  <Star size={16} className="fill-emerald-600" />
-                  Premium Patient
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <Calendar size={16} />
-                  Joined March 2026
-                </div>
-              </div>
-            </div>
-
-            <div className="flex gap-3">
-              <button className="rounded-xl border border-slate-200 p-2.5 text-slate-400 hover:bg-slate-50 transition-all">
-                <Settings size={20} />
-              </button>
-              <button className="rounded-xl bg-slate-900 px-6 py-2.5 text-sm font-bold text-white shadow-lg shadow-slate-900/20 active:scale-95 transition-all">
-                Edit Profile
-              </button>
-            </div>
+            <span className="text-xl font-black tracking-tighter text-slate-900 italic">MedicoCrew</span>
+          </Link>
+          
+          <div className="hidden md:flex relative w-80">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
+            <input 
+              type="text" 
+              placeholder="Search appointments, labs..." 
+              className="w-full h-11 bg-slate-50 border-none rounded-2xl pl-10 pr-4 text-sm font-medium focus:ring-2 focus:ring-teal-500/10 placeholder:text-slate-300 transition-all"
+            />
           </div>
         </div>
-      </section>
 
-      {/* Main Content */}
-      <div className="container mx-auto px-4 mt-12 grid grid-cols-1 lg:grid-cols-4 gap-8">
-        
-        {/* Sidebar Nav */}
-        <aside className="lg:col-span-1 space-y-2">
-          {[
-            { id: "appointments", label: "My Appointments", icon: Calendar },
-            { id: "reviews", label: "My Reviews", icon: MessageSquare },
-            { id: "bookmarks", label: "Saved Hospitals", icon: Bookmark },
-            { id: "history", label: "Medical History", icon: History },
-          ].map((item) => (
-            <button
-              key={item.id}
-              onClick={() => setActiveTab(item.id)}
-              className={cn(
-                "flex w-full items-center gap-3 rounded-xl px-4 py-3.5 text-sm font-bold transition-all",
-                activeTab === item.id 
-                  ? "bg-primary-600 text-white shadow-lg shadow-primary-500/20" 
-                  : "text-slate-500 hover:bg-white hover:text-primary-600 ring-1 ring-transparent hover:ring-slate-100"
-              )}
-            >
-              <item.icon size={18} />
-              {item.label}
-            </button>
-          ))}
-          <div className="pt-8 mt-8 border-t border-slate-200">
-            <button 
-              onClick={handleLogout}
-              className="flex w-full items-center gap-3 rounded-xl px-4 py-3.5 text-sm font-bold text-rose-500 hover:bg-rose-50 transition-all active:scale-95"
-            >
-              <LogOut size={18} />
-              Logout
-            </button>
+        <div className="flex items-center gap-4">
+          <button className="h-11 w-11 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-400 hover:text-teal-500 hover:bg-teal-50 transition-all relative">
+            <Bell size={20} />
+            <span className="absolute top-3 right-3 h-2 w-2 bg-rose-500 rounded-full border-2 border-white"></span>
+          </button>
+          <div className="h-11 w-11 rounded-2xl bg-teal-50 flex items-center justify-center text-teal-600 font-bold border border-teal-100">
+            {profile?.full_name?.charAt(0) || "U"}
           </div>
+        </div>
+      </nav>
+
+      <div className="container mx-auto px-6 py-10 lg:flex gap-10">
+        {/* Modern Sidebar */}
+        <aside className="lg:w-80 flex-shrink-0 space-y-8 mb-10 lg:mb-0">
+          <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-slate-100 relative overflow-hidden group">
+            <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 transition-opacity">
+              <ShieldCheck size={64} className="text-teal-600" />
+            </div>
+            <div className="flex items-center gap-4 relative z-10">
+              <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-teal-400 to-teal-600 flex items-center justify-center text-white shadow-xl">
+                 <User size={30} />
+              </div>
+              <div>
+                <h2 className="font-black text-slate-900 tracking-tight">{profile?.full_name || "Patient User"}</h2>
+                <div className="flex items-center gap-1.5 text-[10px] font-black text-teal-600 uppercase tracking-widest mt-1">
+                  <Star size={10} className="fill-teal-500" />
+                  Premium Patient
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            {[
+              { id: "overview", label: "Health Hub", icon: Activity },
+              { id: "appointments", label: "Appointments", icon: Calendar },
+              { id: "history", label: "Medical Records", icon: FileText },
+              { id: "billing", label: "Billing & Invoices", icon: CreditCard },
+              { id: "reviews", label: "My Feedback", icon: MessageSquare },
+              { id: "bookmarks", label: "Saved Clinics", icon: Bookmark },
+            ].map((item) => (
+              <button
+                key={item.id}
+                onClick={() => setActiveTab(item.id)}
+                className={cn(
+                  "flex w-full items-center gap-4 px-6 py-4 rounded-2xl text-sm font-bold transition-all group",
+                  activeTab === item.id 
+                    ? "bg-teal-500 text-white shadow-xl shadow-teal-500/20" 
+                    : "text-slate-500 hover:bg-white hover:text-teal-600 hover:shadow-sm"
+                )}
+              >
+                <item.icon size={20} className={cn("transition-transform group-hover:scale-110", activeTab === item.id ? "text-white" : "text-slate-300 group-hover:text-teal-500")} />
+                {item.label}
+              </button>
+            ))}
+          </div>
+
+          <button 
+            onClick={handleLogout}
+            className="flex w-full items-center gap-4 px-6 py-4 rounded-2xl text-sm font-bold text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-all active:scale-95 mt-10"
+          >
+            <LogOut size={20} />
+            Sign Out
+          </button>
         </aside>
 
-        {/* Content Area */}
-        <main className="lg:col-span-3 space-y-6">
-          <div className="flex items-center justify-between mb-2">
-            <h2 className="text-xl font-black text-slate-900 tracking-tight capitalize">{activeTab.replace("-", " ")}</h2>
-            <button className="text-xs font-bold text-primary-600 hover:underline">View All</button>
-          </div>
+        {/* Dynamic Content Area */}
+        <main className="flex-grow space-y-10 animate-in fade-in slide-in-from-bottom-6 duration-1000">
+          
+          <header className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+            <div>
+              <div className="text-[10px] font-black text-teal-600 uppercase tracking-[0.4em] mb-2 px-1">Command Center</div>
+              <h1 className="text-4xl font-black text-slate-900 tracking-tighter leading-none capitalize">{activeTab} Overview</h1>
+            </div>
+            <div className="flex gap-3">
+              <button className="h-12 px-6 rounded-2xl border border-slate-100 bg-white text-xs font-black text-slate-500 uppercase tracking-widest flex items-center gap-2 hover:bg-slate-50 transition-all shadow-sm">
+                <Filter size={16} /> Filter
+              </button>
+              <Link to="/hospitals" className="h-12 px-8 rounded-2xl bg-teal-500 text-white text-xs font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-teal-600 transition-all shadow-xl shadow-teal-500/20 active:scale-95">
+                New Booking <ChevronRight size={16} />
+              </Link>
+            </div>
+          </header>
 
-          {activeTab === "appointments" && (
-            <div className="grid grid-cols-1 gap-6">
-              {appointments.length > 0 ? appointments.map((app) => (
-                <div key={app.id} className="group rounded-3xl bg-white p-8 shadow-sm ring-1 ring-slate-100 transition-all hover:shadow-xl hover:ring-primary-500/30 overflow-hidden relative">
-                   <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
-                     <Calendar size={64} />
-                   </div>
-                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
+          <div className="space-y-8">
+            {activeTab === "appointments" && (
+              <div className="grid grid-cols-1 gap-6">
+                {appointments.length > 0 ? appointments.map((app, i) => (
+                  <div key={app.id} 
+                    className="bg-white rounded-[2.5rem] p-8 border border-slate-100 shadow-sm transition-all hover:shadow-2xl hover:shadow-teal-500/5 group relative overflow-hidden"
+                    style={{ animationDelay: `${i * 100}ms` }}
+                  >
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
                       <div className="flex items-center gap-6">
-                         <div className="h-16 w-16 rounded-2xl bg-primary-50 flex items-center justify-center text-primary-600 border border-primary-100 shadow-inner">
-                            <Hospital size={32} />
-                         </div>
-                         <div>
-                            <div className="text-[10px] font-black text-primary-600 uppercase tracking-[0.2em] mb-1">Medical Booking</div>
-                            <h3 className="text-xl font-black text-slate-900 tracking-tight">{app.hospitals?.name}</h3>
-                            <div className="mt-2 flex items-center gap-3 text-xs font-bold text-slate-400">
-                               <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-50 border border-slate-100">
-                                 <Calendar size={12} className="text-slate-500" />
-                                 {new Date(app.appointment_date).toLocaleDateString()}
-                               </div>
-                               <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-50 border border-slate-100">
-                                 <Clock size={12} className="text-slate-500" />
-                                 {new Date(app.appointment_date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                               </div>
+                        <div className="h-20 w-20 rounded-3xl bg-teal-50 flex items-center justify-center text-teal-600 border border-teal-100 shadow-inner group-hover:scale-110 transition-transform duration-500">
+                          <Hospital size={36} strokeWidth={1.5} />
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2 mb-2">
+                             <span className={cn(
+                               "h-2 w-2 rounded-full",
+                               app.status === 'confirmed' ? "bg-teal-500 animate-pulse" : "bg-slate-300"
+                             )} />
+                             <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">{app.status} Facility</span>
+                          </div>
+                          <h3 className="text-2xl font-black text-slate-900 tracking-tight">{app.hospitals?.name}</h3>
+                          <div className="mt-3 flex flex-wrap gap-4">
+                            <div className="flex items-center gap-2 text-xs font-bold text-slate-500 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-100">
+                              <Calendar size={14} className="text-teal-500" />
+                              {new Date(app.appointment_date).toLocaleDateString(undefined, { month: 'long', day: 'numeric' })}
                             </div>
-                         </div>
+                            <div className="flex items-center gap-2 text-xs font-bold text-slate-500 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-100">
+                              <Clock size={14} className="text-teal-500" />
+                              {new Date(app.appointment_date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </div>
+                          </div>
+                        </div>
                       </div>
 
-                      <div className="flex flex-col items-start md:items-end gap-3">
-                         <div className="flex items-center gap-2 px-4 py-2 bg-slate-900 rounded-2xl shadow-lg">
-                            <Ticket size={18} className="text-primary-400" />
-                            <code className="text-sm font-black text-white tracking-widest">{app.token_number}</code>
-                         </div>
-                         <div className={cn(
-                           "flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ring-1",
-                           app.status === 'completed' ? "bg-emerald-50 text-emerald-600 ring-emerald-600/20" :
-                           app.status === 'confirmed' ? "bg-blue-50 text-blue-600 ring-blue-600/20" :
-                           "bg-primary-50 text-primary-600 ring-primary-600/20"
-                         )}>
-                           {app.status === 'completed' && <CheckCircle2 size={12} />}
-                           {app.status}
-                         </div>
-                      </div>
-                   </div>
-                   
-                   <div className="mt-8 pt-6 border-t border-slate-100 flex items-center justify-between">
-                      <p className="text-[10px] font-bold text-slate-400 max-w-sm uppercase tracking-wider">
-                         {app.status === 'pending' ? "Waiting for facility confirmation. Your token will be valid once confirmed." : 
-                          app.status === 'completed' ? "Session finished. You can now use your token to leave a review." :
-                          "Please reach the facility 15 minutes before your time slot."}
-                      </p>
-                      {app.status === 'completed' && (
+                      <div className="flex items-center gap-6">
+                        <div className="text-right hidden sm:block">
+                           <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Queue ID</div>
+                           <div className="text-xl font-black text-slate-900">#{app.token_number}</div>
+                        </div>
                         <Link 
                           to={`/hospitals/${app.hospital_id}`}
-                          className="flex items-center gap-2 text-xs font-black text-primary-600 hover:text-primary-700 transition-colors uppercase tracking-widest"
+                          className="h-16 w-16 md:w-48 rounded-2xl bg-slate-900 hover:bg-teal-600 text-white flex items-center justify-center gap-3 transition-all active:scale-95 shadow-xl shadow-slate-900/10"
                         >
-                          Submit Review
-                          <ChevronRight size={14} />
+                          <span className="hidden md:block text-xs font-black uppercase tracking-widest">View Details</span>
+                          <ChevronRight size={20} />
                         </Link>
-                      )}
-                   </div>
-                </div>
-              )) : (
-                <div className="text-center py-20 bg-white rounded-3xl border-2 border-dashed border-slate-200">
-                  <Calendar size={48} className="mx-auto text-slate-200 mb-4" />
-                  <p className="text-sm font-black text-slate-400">No scheduled appointments found.</p>
-                  <Link to="/hospitals" className="mt-4 inline-flex items-center gap-2 text-xs font-black text-primary-600 uppercase tracking-widest hover:underline">
-                    Find a Facility
-                    <ChevronRight size={14} className="rotate-90" />
-                  </Link>
-                </div>
-              )}
-            </div>
-          )}
-
-          {activeTab === "reviews" && (
-            <div className="grid grid-cols-1 gap-6">
-              {reviews.length > 0 ? reviews.map((review) => (
-                <div key={review.id} className="group rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-100 transition-all hover:shadow-xl hover:ring-primary-500/30">
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-4">
-                      <div className="h-14 w-14 rounded-xl bg-slate-50 flex items-center justify-center text-primary-600 border border-slate-100">
-                        <Hospital size={28} />
                       </div>
-                      <div>
-                        <h3 className="font-bold text-slate-900 group-hover:text-primary-600 transition-colors uppercase tracking-tight text-sm">
-                          {review.hospitals?.name}
-                        </h3>
-                        <div className="mt-1 flex items-center gap-2 text-xs font-bold text-slate-400">
-                          <Calendar size={12} />
-                          {new Date(review.created_at).toLocaleDateString()}
-                          <span className="mx-1">•</span>
-                          <span className="text-emerald-500 font-black">Verified</span>
+                    </div>
+                  </div>
+                )) : (
+                  <div className="py-32 flex flex-col items-center justify-center bg-white rounded-[3rem] border border-dashed border-slate-200">
+                    <Calendar size={64} className="text-slate-100 mb-6" />
+                    <p className="text-slate-400 font-bold">No active appointments discovered.</p>
+                    <Link to="/hospitals" className="mt-6 text-teal-600 font-black text-xs uppercase tracking-widest hover:underline">Book your first doctor</Link>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {activeTab === "history" && (
+              <div className="bg-white rounded-[3rem] p-12 border border-slate-100 shadow-sm text-center">
+                 <div className="h-24 w-24 bg-blue-50 rounded-[2rem] flex items-center justify-center text-blue-500 mx-auto mb-8 shadow-inner border border-blue-100">
+                   <History size={40} />
+                 </div>
+                 <h3 className="text-2xl font-black text-slate-900 tracking-tight">Your Digital Health Vault</h3>
+                 <p className="mt-4 text-slate-500 max-w-sm mx-auto font-medium leading-relaxed">
+                   Access your lab results, prescriptions, and medical history. Your data is encrypted and secure.
+                 </p>
+                 <button className="mt-10 h-14 px-10 rounded-2xl bg-blue-500 text-white text-xs font-black uppercase tracking-widest shadow-xl shadow-blue-500/20 active:scale-95">
+                   Request Access Logs
+                 </button>
+              </div>
+            )}
+
+            {activeTab === "billing" && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-[2.5rem] p-10 text-white shadow-2xl relative overflow-hidden group">
+                  <div className="absolute -top-10 -right-10 h-40 w-40 bg-white/5 rounded-full blur-3xl" />
+                  <div className="relative z-10 flex flex-col h-full">
+                    <div className="flex justify-between items-start mb-12">
+                      <CreditCard size={32} className="text-teal-400" />
+                      <div className="text-[10px] font-black uppercase tracking-widest opacity-50 italic">Digital Health Card</div>
+                    </div>
+                    <div className="mt-auto">
+                      <div className="text-3xl font-black tracking-widest mb-2">**** **** **** 4812</div>
+                      <div className="flex justify-between items-end">
+                        <div>
+                          <div className="text-[8px] font-black uppercase opacity-40 mb-1">Holder</div>
+                          <div className="text-sm font-bold uppercase tracking-wider">{profile?.full_name || "Arun Kumar"}</div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-[8px] font-black uppercase opacity-40 mb-1">Balance</div>
+                          <div className="text-xl font-black tracking-tight text-teal-400">₹0.00</div>
                         </div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-1.5 rounded-lg bg-amber-50 px-2.5 py-1 text-sm font-black text-amber-600">
-                      <Star size={14} className="fill-amber-600" />
-                      {review.overall_rating}
+                  </div>
+                </div>
+
+                <div className="bg-white rounded-[2.5rem] p-10 border border-slate-100 shadow-sm flex flex-col items-center justify-center text-center">
+                  <div className="h-20 w-20 bg-teal-50 rounded-full flex items-center justify-center text-teal-500 mb-6">
+                    <CheckCircle2 size={32} />
+                  </div>
+                  <h4 className="text-xl font-black text-slate-900 mb-2">No Pending Dues</h4>
+                  <p className="text-xs text-slate-400 font-medium">All your medical bills are settled. Use the history tab to view past invoices.</p>
+                </div>
+              </div>
+            )}
+
+            {activeTab === "reviews" && (
+              <div className="grid grid-cols-1 gap-6">
+                {reviews.length > 0 ? reviews.map((review) => (
+                  <div key={review.id} className="bg-white rounded-[2.5rem] p-10 border border-slate-100 shadow-sm hover:shadow-xl transition-all group">
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-center gap-4">
+                         <div className="h-14 w-14 rounded-2xl bg-teal-50 flex items-center justify-center text-teal-600 border border-teal-100 shadow-sm">
+                           <Hospital size={28} />
+                         </div>
+                         <div>
+                            <h4 className="font-black text-slate-900 group-hover:text-teal-600 transition-colors">{review.hospitals?.name}</h4>
+                            <div className="flex items-center gap-2 mt-1">
+                              <Star size={12} className="fill-amber-500 text-amber-500" />
+                              <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">{review.overall_rating} / 5 Rating</span>
+                            </div>
+                         </div>
+                      </div>
+                      <div className="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em]">{new Date(review.created_at).toLocaleDateString()}</div>
+                    </div>
+                    <p className="mt-8 text-slate-500 leading-relaxed font-italic border-l-4 border-teal-50 pl-6 py-1 italic">
+                      &quot;{review.review_text}&quot;
+                    </p>
+                    <div className="mt-8 pt-8 border-t border-slate-50 flex justify-end gap-6 text-[10px] font-black uppercase tracking-widest text-slate-400">
+                      <button className="hover:text-teal-600">Edit Review</button>
+                      <button className="hover:text-rose-500">Delete Permanently</button>
                     </div>
                   </div>
-                  
-                  <p className="mt-5 text-sm leading-relaxed text-slate-600 italic">
-                    &quot;{review.review_text}&quot;
-                  </p>
-                  
-                  <div className="mt-6 flex items-center gap-4 pt-5 border-t border-slate-50">
-                    <button className="text-xs font-bold text-slate-400 hover:text-primary-600 transition-colors uppercase tracking-widest">Edit Review</button>
-                    <button className="text-xs font-bold text-slate-400 hover:text-rose-500 transition-colors uppercase tracking-widest">Delete</button>
+                )) : (
+                  <div className="py-32 flex flex-col items-center justify-center bg-white rounded-[3rem] border border-dashed border-slate-200">
+                    <MessageSquare size={64} className="text-slate-100 mb-6" />
+                    <p className="text-slate-400 font-bold">You haven&apos;t shared your experience yet.</p>
                   </div>
-                </div>
-              )) : (
-                <div className="text-center py-12 bg-white rounded-3xl border-2 border-dashed border-slate-200">
-                  <MessageSquare size={32} className="mx-auto text-slate-300" />
-                  <p className="mt-4 text-sm font-bold text-slate-500">You haven&apos;t written any reviews yet.</p>
-                </div>
-              )}
-            </div>
-          )}
-
-          {activeTab === "bookmarks" && (
-            <div className="flex flex-col items-center justify-center h-64 bg-slate-100/50 rounded-3xl border-2 border-dashed border-slate-200">
-              <div className="bg-white p-4 rounded-full shadow-sm text-slate-300">
-                <Bookmark size={40} />
+                )}
               </div>
-              <p className="mt-4 text-sm font-bold text-slate-400">No saved hospitals yet.</p>
-              <Link to="/hospitals" className="mt-4 text-xs font-black text-primary-600 uppercase tracking-widest hover:underline">Find your first hospital</Link>
-            </div>
-          )}
+            )}
+            
+            {activeTab === "bookmarks" && (
+               <div className="py-40 text-center">
+                  <Bookmark size={80} className="mx-auto text-slate-100 mb-8" />
+                  <h3 className="text-2xl font-black text-slate-900 mb-4">Clinic Collection</h3>
+                  <p className="text-slate-400 font-medium max-w-xs mx-auto">Save your preferred clinics and doctors for quick access later.</p>
+                  <Link to="/hospitals" className="mt-8 inline-flex h-14 items-center bg-white border border-slate-200 px-10 rounded-2xl text-xs font-black uppercase tracking-widest text-slate-900 hover:bg-slate-50 transition-all active:scale-95">Discover New</Link>
+               </div>
+            )}
+          </div>
         </main>
       </div>
+      
+      {/* Dynamic Health Stats Banner */}
+      {activeTab === "overview" && (
+        <div className="container mx-auto px-6 pb-24">
+           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+              {[
+                { label: "Heart Rate", value: "72", unit: "BPM", icon: Activity, color: "text-rose-500 bg-rose-50" },
+                { label: "Blood Glucose", value: "98", unit: "mg/dL", icon: Stethoscope, color: "text-blue-500 bg-blue-50" },
+                { label: "Vitals Pulse", value: "99%", unit: "Avg", icon: ShieldCheck, color: "text-teal-500 bg-teal-50" },
+                { label: "Reports Sync", value: "03", unit: "Ready", icon: History, color: "text-amber-500 bg-amber-50" },
+              ].map((stat, i) => (
+                <div key={i} className="bg-white rounded-[2rem] p-8 border border-slate-100 shadow-sm flex items-center justify-between group hover:border-teal-500 transition-all">
+                   <div>
+                      <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{stat.label}</div>
+                      <div className="flex items-baseline gap-1">
+                        <span className="text-3xl font-black text-slate-900 tracking-tighter">{stat.value}</span>
+                        <span className="text-xs font-bold text-slate-400 italic">{stat.unit}</span>
+                      </div>
+                   </div>
+                   <div className={cn("h-14 w-14 rounded-2xl flex items-center justify-center transition-transform group-hover:rotate-12", stat.color)}>
+                      <stat.icon size={24} />
+                   </div>
+                </div>
+              ))}
+           </div>
+        </div>
+      )}
     </div>
   );
 }

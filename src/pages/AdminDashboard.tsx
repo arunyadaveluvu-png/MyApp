@@ -1,16 +1,17 @@
 import { useEffect, useState } from "react";
 import { 
   Users, Hospital, Package, DollarSign, TrendingUp, ArrowUpRight, ArrowDownRight, 
-  Plus, MoreHorizontal, Search, LayoutGrid, List, FileDown, Trash2, Edit3, Check, X
+  Plus, MoreHorizontal, Search, LayoutGrid, List, FileDown, Trash2, Edit3, Check, X,
+  Shield, Globe, Database, CreditCard, Activity, BarChart2, Bell, Settings
 } from "lucide-react";
 import { 
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
-  AreaChart, Area, Cell, PieChart, Pie
+  AreaChart, Area, Cell, PieChart, Pie, BarChart, Bar
 } from "recharts";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/components/Toast";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 const salesData = [
   { name: "Jan", sales: 4000, revenue: 120000 },
@@ -23,13 +24,13 @@ const salesData = [
 ];
 
 const categoryData = [
-  { name: "ICU", value: 400 },
-  { name: "Surgery", value: 300 },
-  { name: "Diagnostics", value: 300 },
-  { name: "General", value: 200 },
+  { name: "Diagnostics", value: 450 },
+  { name: "Surgery", value: 280 },
+  { name: "Emergencies", value: 390 },
+  { name: "General", value: 520 },
 ];
 
-const COLORS = ["#0ea5e9", "#0d9488", "#f43f5e", "#8b5cf6"];
+const COLORS = ["#6366f1", "#8b5cf6", "#ec4899", "#f43f5e"];
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("overview");
@@ -58,10 +59,10 @@ export default function AdminDashboard() {
 
   const handleAddAdmin = async (e: React.FormEvent) => {
     e.preventDefault();
-    const tid = showToast("Provisioning new administrator...", "loading");
+    const tid = showToast("Provisioning administrative credentials...", "loading");
     setTimeout(() => {
       hideToast(tid);
-      showToast(`Administrator invitation sent to ${newAdmin.email}`, "success");
+      showToast(`Encrypted invitation dispatched to ${newAdmin.email}`, "success");
       setIsAddAdminOpen(false);
       setNewAdmin({ name: "", email: "" });
     }, 1500);
@@ -69,7 +70,7 @@ export default function AdminDashboard() {
 
   const handleAddEquipment = async (e: React.FormEvent) => {
     e.preventDefault();
-    const toastId = showToast("Commencing equipment registration...", "loading");
+    const toastId = showToast("Registering asset in global ledger...", "loading");
     
     try {
       const { error } = await supabase.from("equipment").insert([{
@@ -82,7 +83,7 @@ export default function AdminDashboard() {
       if (error) throw error;
 
       hideToast(toastId);
-      showToast(`${newEquipment.name} successfully cataloged in the network.`, "success");
+      showToast(`${newEquipment.name} cataloged in the ecosystem.`, "success");
       setIsAddEquipmentOpen(false);
       setNewEquipment({ name: "", category: "Emergency", price: "", stock: "0", supplier: "", description: "", image_url: "" });
       fetchInventory();
@@ -100,12 +101,12 @@ export default function AdminDashboard() {
       return;
     }
 
-    const toastId = showToast(`Updating inventory for ${name}...`, "loading");
+    const toastId = showToast(`Syncing inventory for ${name}...`, "loading");
     try {
       const { error } = await supabase.from("equipment").update({ stock: newStock }).eq("id", id);
       if (error) throw error;
       hideToast(toastId);
-      showToast(`${name} stock level updated to ${newStock}.`, "success");
+      showToast(`${name} inventory adjusted to ${newStock}.`, "success");
       setEditStockId(null);
       fetchInventory();
     } catch (err: any) {
@@ -115,14 +116,14 @@ export default function AdminDashboard() {
   };
 
   const handleDeleteEquipment = async (id: string, name: string) => {
-    if (!confirm(`Are you certain you want to decommission ${name} from the active inventory?`)) return;
+    if (!confirm(`Permanently decommission ${name} from the global catalog?`)) return;
     
-    const toastId = showToast("Initiating decommissioning protocol...", "loading");
+    const toastId = showToast("Decommissioning asset...", "loading");
     try {
       const { error } = await supabase.from("equipment").delete().eq("id", id);
       if (error) throw error;
       hideToast(toastId);
-      showToast(`${name} removed from the ecosystem.`, "success");
+      showToast(`${name} removed from registry.`, "success");
       fetchInventory();
       fetchStats();
     } catch (err: any) {
@@ -132,23 +133,17 @@ export default function AdminDashboard() {
   };
 
   const downloadSalesReport = () => {
-    const tid = showToast("Compiling sales ledger...", "loading");
+    const tid = showToast("Compiling global financial ledger...", "loading");
     
     if (recentOrders.length === 0) {
       hideToast(tid);
-      showToast("No transaction data available for export.", "error");
+      showToast("No transaction data detected.", "error");
       return;
     }
 
-    const headers = ["Order ID", "Hospital", "Equipment", "Category", "Acquisition Price", "Status", "Date"];
+    const headers = ["Order ID", "Hospital", "Equipment", "Category", "Price", "Status", "Timestamp"];
     const rows = recentOrders.map(order => [
-      order.id,
-      order.hospitals?.name,
-      order.equipment?.name,
-      order.equipment?.category,
-      order.equipment?.price,
-      order.status,
-      new Date(order.acquisition_date).toLocaleDateString()
+      order.id, order.hospitals?.name, order.equipment?.name, order.equipment?.category, order.equipment?.price, order.status, new Date(order.acquisition_date).toISOString()
     ]);
 
     const csvContent = [headers, ...rows].map(e => e.join(",")).join("\n");
@@ -156,14 +151,14 @@ export default function AdminDashboard() {
     const link = document.createElement("a");
     const url = URL.createObjectURL(blob);
     link.setAttribute("href", url);
-    link.setAttribute("download", `medico-crew-sales-report-${new Date().toISOString().split('T')[0]}.csv`);
+    link.setAttribute("download", `medico-global-ledger-${new Date().toISOString()}.csv`);
     link.style.visibility = "hidden";
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
     
     hideToast(tid);
-    showToast("Platform report generated successfully.", "success");
+    showToast("Ledger exported successfully.", "success");
   };
 
   const fetchInventory = async () => {
@@ -180,7 +175,7 @@ export default function AdminDashboard() {
 
     const role = user.user_metadata?.role || "user";
     if (role !== "admin") {
-      showToast("Access Denied: Admin privileges required.", "error");
+      showToast("Access Denied: Administrative authorization required.", "error");
       navigate(`/dashboard/${role}`);
       return;
     }
@@ -193,7 +188,7 @@ export default function AdminDashboard() {
     ]);
     
     const inventoryData = iRes.data || [];
-    const totalRev = inventoryData.reduce((acc, item: any) => acc + (item.equipment?.price || 0), 0) * 10;
+    const totalRev = inventoryData.reduce((acc, item: any) => acc + (item.equipment?.price || 0), 0) * 12.5;
 
     setCounts({
       users: uRes.count || 0,
@@ -206,481 +201,393 @@ export default function AdminDashboard() {
   };
 
   const stats = [
-    { label: "Total Users", value: counts.users.toLocaleString(), icon: Users, trend: "+12%", up: true, color: "bg-blue-50 text-blue-600" },
-    { label: "Partner Hospitals", value: counts.hospitals.toLocaleString(), icon: Hospital, trend: "+5%", up: true, color: "bg-teal-50 text-teal-600" },
-    { label: "Equipments", value: counts.equipment.toLocaleString(), icon: Package, trend: "-2%", up: false, color: "bg-purple-50 text-purple-600" },
-    { label: "Platform Revenue", value: `₹${(counts.revenue / 1000).toLocaleString()}K`, icon: DollarSign, trend: "+18%", up: true, color: "bg-emerald-50 text-emerald-600" },
+    { label: "Total Nodes", value: counts.users.toLocaleString(), icon: Globe, trend: "+14.2%", up: true, color: "bg-indigo-500/10 text-indigo-400" },
+    { label: "Partner Facilities", value: counts.hospitals.toLocaleString(), icon: Hospital, trend: "+3.1%", up: true, color: "bg-violet-500/10 text-violet-400" },
+    { label: "Global Catalog", value: counts.equipment.toLocaleString(), icon: Database, trend: "-1.2%", up: false, color: "bg-pink-500/10 text-pink-400" },
+    { label: "Platform Revenue", value: `₹${(counts.revenue / 1000).toLocaleString()}K`, icon: CreditCard, trend: "+22.8%", up: true, color: "bg-emerald-500/10 text-emerald-400" },
   ];
 
   return (
-    <div className="bg-slate-50 min-h-screen p-4 md:p-8 lg:p-12">
-      <div className="container mx-auto">
-        
-        {/* Navigation Tabs */}
-        <div className="mb-8 flex flex-col justify-between gap-4 md:flex-row md:items-center border-b border-slate-200">
-          <div className="flex items-center gap-2">
-            {(["overview", "inventory", "staff"] as const).map((tab) => (
+    <div className="bg-[#05070A] min-h-screen text-slate-400 font-sans selection:bg-indigo-500/30 selection:text-indigo-200">
+      
+      {/* Executive Command Bar */}
+      <nav className="sticky top-0 z-50 bg-[#05070A]/80 backdrop-blur-2xl border-b border-white/5 px-10 h-20 flex items-center justify-between">
+        <div className="flex items-center gap-12">
+          <Link to="/" className="flex items-center gap-3 group">
+            <div className="h-10 w-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-2xl shadow-indigo-600/30 group-hover:scale-110 transition-all duration-500">
+              <Shield size={24} />
+            </div>
+            <span className="text-xl font-black tracking-tighter text-white italic">MedicoGlobal</span>
+          </Link>
+          
+          <div className="hidden lg:flex items-center gap-8 text-[10px] font-black uppercase tracking-[0.3em]">
+            {["overview", "inventory", "staff"].map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
                 className={cn(
-                  "px-6 py-4 text-sm font-black transition-all capitalize relative",
-                  activeTab === tab
-                    ? "text-primary-600"
-                    : "text-slate-400 hover:text-slate-600"
+                  "transition-all hover:text-white relative py-8",
+                  activeTab === tab ? "text-white" : "text-slate-500"
                 )}
               >
                 {tab}
-                {activeTab === tab && (
-                  <div className="absolute bottom-0 left-0 h-1 w-full bg-primary-600 rounded-t-full shadow-lg shadow-primary-500/40" />
-                )}
+                {activeTab === tab && <div className="absolute bottom-0 left-0 h-1 w-full bg-indigo-500 rounded-t-full shadow-lg shadow-indigo-500/40" />}
               </button>
             ))}
           </div>
-          
-          <div className="flex items-center gap-3 pb-2 md:pb-0">
-            <button
-              onClick={downloadSalesReport}
-              className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-xs font-bold text-slate-600 shadow-sm hover:bg-slate-50 transition-all active:scale-95"
-            >
-              <FileDown size={16} />
-              Export Sales
-            </button>
-            <button 
-              onClick={() => setIsAddEquipmentOpen(true)}
-              className="flex items-center gap-2 rounded-xl bg-slate-900 px-5 py-2.5 text-xs font-bold text-white shadow-lg shadow-slate-900/20 hover:bg-slate-800 transition-all active:scale-95"
-            >
-              <Plus size={16} />
-              New Asset
-            </button>
+        </div>
+
+        <div className="flex items-center gap-6">
+          <div className="hidden md:flex relative w-64 group">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-600 group-focus-within:text-indigo-500 transition-colors" size={16} />
+            <input 
+              type="text" 
+              placeholder="Query global data..." 
+              className="w-full h-11 bg-white/5 border border-white/10 rounded-2xl pl-10 pr-4 text-xs font-bold text-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500/50 outline-none transition-all placeholder:text-slate-700 font-mono"
+            />
+          </div>
+          <button className="h-11 w-11 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-slate-500 hover:text-indigo-400 transition-all shadow-lg relative">
+            <Bell size={18} />
+            <span className="absolute top-3 right-3 h-1.5 w-1.5 bg-indigo-500 rounded-full ring-2 ring-[#05070A]" />
+          </button>
+          <div className="h-11 w-11 rounded-full bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 font-black">
+            A
           </div>
         </div>
+      </nav>
+
+      <div className="container mx-auto px-10 py-12 pb-32 space-y-16">
+        
+        {/* Header Section */}
+        <header className="flex flex-col md:flex-row md:items-end justify-between gap-8">
+           <div>
+              <div className="flex items-center gap-3 text-[10px] font-black text-indigo-400 uppercase tracking-[0.5em] mb-4">
+                 <Activity size={14} />
+                 Terminal Alpha-01
+              </div>
+              <h1 className="text-5xl font-black text-white tracking-tighter italic">Platform Overlord</h1>
+              <p className="mt-3 text-slate-500 font-medium max-w-xl">
+                 Real-time synchronization with global healthcare nodes. Monitoring transaction throughput and facility health across the ecosystem.
+              </p>
+           </div>
+           <div className="flex gap-4">
+              <button 
+                onClick={downloadSalesReport}
+                className="h-14 px-8 rounded-2xl bg-white/5 border border-white/10 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 hover:text-white hover:bg-white/10 transition-all flex items-center gap-3"
+              >
+                <FileDown size={18} /> Download Ledger
+              </button>
+              <button 
+                onClick={() => setIsAddEquipmentOpen(true)}
+                className="h-14 px-8 rounded-2xl bg-indigo-600 text-white text-[10px] font-black uppercase tracking-[0.2em] shadow-2xl shadow-indigo-600/30 hover:bg-indigo-500 transition-all active:scale-95 flex items-center gap-3"
+              >
+                <Plus size={18} /> Register Asset
+              </button>
+           </div>
+        </header>
 
         {activeTab === "overview" && (
-          <header className="mb-10">
-            <div className="flex items-center gap-2 text-sm font-bold text-primary-600">
-              <TrendingUp size={16} />
-              Executive Summary
-            </div>
-            <h1 className="mt-1 text-3xl font-black tracking-tight text-slate-900 sm:text-4xl">Admin Console</h1>
-            <p className="mt-1 text-slate-500">Real-time platform performance and transaction tracking.</p>
-          </header>
-        )}
-
-        {activeTab === "overview" ? (
-          <>
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {stats.map((stat, i) => (
-            <div key={i} className="group relative overflow-hidden rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-100 transition-all hover:shadow-xl hover:-translate-y-1">
-              <div className="flex items-start justify-between">
-                <div className={cn("rounded-xl p-3", stat.color)}>
-                  <stat.icon size={24} />
-                </div>
-                <div className={cn(
-                  "flex items-center gap-1 text-xs font-bold",
-                  stat.up ? "text-emerald-600" : "text-rose-600"
-                )}>
-                  {stat.up ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
-                  {stat.trend}
-                </div>
-              </div>
-              <div className="mt-4">
-                <div className="text-sm font-bold text-slate-500 uppercase tracking-tighter">{stat.label}</div>
-                <div className="text-2xl font-black text-slate-900 tracking-tight">{stat.value}</div>
-              </div>
-              <div className="absolute bottom-0 left-0 h-1 w-full bg-slate-50 transition-all group-hover:bg-primary-500" />
-            </div>
-          ))}
-        </div>
-
-        {/* Charts & Analytics */}
-        <div className="mt-8 grid grid-cols-1 gap-8 lg:grid-cols-3">
-          
-          {/* Main Sales Chart */}
-          <div className="lg:col-span-2 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-100">
-            <div className="mb-6 flex items-center justify-between">
-              <h3 className="text-lg font-bold text-slate-900">Revenue Performance</h3>
-              <select className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-bold text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary-500/20">
-                <option>Last 7 Months</option>
-                <option>Last Year</option>
-              </select>
-            </div>
-            <div className="h-[300px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={salesData}>
-                  <defs>
-                    <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#0ea5e9" stopOpacity={0.2}/>
-                      <stop offset="95%" stopColor="#0ea5e9" stopOpacity={0}/>
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                  <XAxis 
-                    dataKey="name" 
-                    axisLine={false} 
-                    tickLine={false} 
-                    tick={{fill: "#94a3b8", fontSize: 12}}
-                    dy={10}
-                  />
-                  <YAxis 
-                    axisLine={false} 
-                    tickLine={false} 
-                    tick={{fill: "#94a3b8", fontSize: 12}}
-                  />
-                  <Tooltip 
-                    contentStyle={{borderRadius: "12px", border: "none", boxShadow: "0 10px 15px -3px rgb(0 0 0 / 0.1)"}}
-                  />
-                  <Area type="monotone" dataKey="revenue" stroke="#0ea5e9" strokeWidth={3} fillOpacity={1} fill="url(#colorRevenue)" />
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-
-          {/* Category Distribution */}
-          <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-100">
-            <h3 className="mb-6 text-lg font-bold text-slate-900">Sales by Category</h3>
-            <div className="h-[250px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={categoryData}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={60}
-                    outerRadius={80}
-                    paddingAngle={5}
-                    dataKey="value"
-                  >
-                    {categoryData.map((_entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-            <div className="mt-4 space-y-3">
-              {categoryData.map((cat, i) => (
-                <div key={i} className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="h-2 w-2 rounded-full" style={{backgroundColor: COLORS[i]}} />
-                    <span className="text-sm font-medium text-slate-500">{cat.name}</span>
-                  </div>
-                  <span className="text-sm font-bold text-slate-900">{cat.value} Orders</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Recent Orders Table */}
-        <div className="mt-8 rounded-2xl bg-white shadow-sm ring-1 ring-slate-100 overflow-hidden">
-          <div className="flex items-center justify-between bg-slate-50/50 p-6 border-b">
-            <h3 className="text-lg font-bold text-slate-900">Recent Equipment Orders</h3>
-            <div className="flex items-center gap-2">
-              <div className="flex rounded-lg border border-slate-200 bg-white p-1">
-                <button 
-                  onClick={() => setView("grid")}
-                  className={cn("p-1.5 rounded", view === "grid" ? "bg-slate-100 text-slate-900" : "text-slate-400")}
-                >
-                  <LayoutGrid size={16} />
-                </button>
-                <button 
-                  onClick={() => setView("list")}
-                  className={cn("p-1.5 rounded", view === "list" ? "bg-slate-100 text-slate-900" : "text-slate-400")}
-                >
-                  <List size={16} />
-                </button>
-              </div>
-            </div>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-left">
-              <thead>
-                <tr className="border-b bg-slate-50/20 text-xs font-bold uppercase tracking-wider text-slate-400">
-                  <th className="px-6 py-4">Hospital</th>
-                  <th className="px-6 py-4">Equipment</th>
-                  <th className="px-6 py-4">Date</th>
-                  <th className="px-6 py-4">Total</th>
-                  <th className="px-6 py-4">Status</th>
-                  <th className="px-6 py-4 text-right">Action</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 text-sm">
-                {recentOrders.map((order) => (
-                  <tr key={order.id} className="group hover:bg-slate-50/50 transition-colors">
-                    <td className="px-6 py-4 font-bold text-slate-900">{order.hospitals?.name}</td>
-                    <td className="px-6 py-4 text-slate-600">{order.equipment?.name}</td>
-                    <td className="px-6 py-4 text-slate-500">{new Date(order.acquisition_date).toLocaleDateString()}</td>
-                    <td className="px-6 py-4 font-black text-slate-900">₹{order.equipment?.price?.toLocaleString()}</td>
-                    <td className="px-6 py-4">
-                      <span className="inline-flex rounded-full bg-emerald-50 px-2 py-1 text-[10px] font-bold text-emerald-600 ring-1 ring-emerald-600/20">
-                        Success
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <button 
-                        onClick={() => showToast(`Opening audit for Order #${order.id.substring(0, 8)}`, "info")}
-                        className="text-slate-400 hover:text-primary-600 transition-colors active:scale-90"
-                      >
-                        <MoreHorizontal size={18} />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-                {recentOrders.length === 0 && (
-                  <tr>
-                    <td colSpan={6} className="py-20 text-center text-slate-400 font-bold">
-                      No recent transactions detected in the network.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-          <div className="bg-slate-50/50 p-4 border-t text-center">
-            <button 
-              onClick={() => showToast("Loading full ledger...", "loading")}
-              className="text-sm font-bold text-primary-600 hover:text-primary-700 active:scale-95 transition-all"
-            >
-              View All Transactions
-            </button>
-          </div>
-        </div>
-        </>
-        ) : activeTab === "inventory" ? (
-          <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
-              <div>
-                <h2 className="text-3xl font-black text-slate-900 tracking-tight">Inventory Management</h2>
-                <p className="text-slate-500 mt-1">Catalog and manage medical equipment across the platform.</p>
-              </div>
-            </div>
-
-            <div className="rounded-2xl bg-white shadow-sm ring-1 ring-slate-100 overflow-hidden">
-              <div className="p-6 border-b border-slate-50 flex items-center justify-between">
-                <div className="relative w-full max-w-md">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-                  <input 
-                    type="text" 
-                    placeholder="Search equipment catalog..." 
-                    className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/20"
-                  />
-                </div>
-              </div>
-              <div className="overflow-x-auto">
-                <table className="w-full text-left">
-                  <thead className="bg-slate-50/50 text-xs font-bold text-slate-400 uppercase tracking-wider">
-                    <tr>
-                      <th className="px-6 py-4">Equipment</th>
-                      <th className="px-6 py-4">Category</th>
-                      <th className="px-6 py-4">Supplier</th>
-                      <th className="px-6 py-4 text-center">Stock</th>
-                      <th className="px-6 py-4">Price</th>
-                      <th className="px-6 py-4 text-right">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-50">
-                    {inventory.map((item) => (
-                      <tr key={item.id} className="group hover:bg-slate-50 transition-colors">
-                        <td className="px-6 py-4">
-                          <div className="flex items-center gap-3">
-                            {item.image_url ? (
-                              <img src={item.image_url} alt={item.name} className="h-10 w-10 rounded-lg object-cover ring-1 ring-slate-200" />
-                            ) : (
-                              <div className="h-10 w-10 rounded-lg bg-slate-100 flex items-center justify-center text-slate-400">
-                                <Package size={20} />
-                              </div>
-                            )}
-                            <p className="font-bold text-slate-900">{item.name}</p>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4">
-                          <span className="text-xs font-bold text-slate-500 bg-slate-100 px-2 py-1 rounded-md">{item.category}</span>
-                        </td>
-                        <td className="px-6 py-4 text-xs font-medium text-slate-600">{item.supplier}</td>
-                        <td className="px-6 py-4 text-center">
-                          {editStockId === item.id ? (
-                            <div className="flex items-center justify-center gap-1 animate-in zoom-in-95 duration-200">
-                              <input 
-                                type="number" 
-                                autoFocus
-                                value={tempStockValue}
-                                onChange={(e) => setTempStockValue(e.target.value)}
-                                className="w-16 h-8 rounded-lg bg-white border border-primary-300 text-center text-xs font-bold focus:ring-2 focus:ring-primary-500/20 focus:outline-none"
-                              />
-                              <button onClick={() => handleUpdateStock(item.id, item.name)} className="p-1 text-emerald-600 hover:bg-emerald-50 rounded-md transition-all">
-                                <Check size={14} />
-                              </button>
-                              <button onClick={() => setEditStockId(null)} className="p-1 text-rose-600 hover:bg-rose-50 rounded-md transition-all">
-                                <X size={14} />
-                              </button>
-                            </div>
-                          ) : (
-                            <div className="flex items-center justify-center gap-2 group/stock">
-                              <span className={cn(
-                                "text-sm font-black px-2 py-0.5 rounded-full transition-all",
-                                item.stock <= 5 ? "bg-rose-50 text-rose-600 ring-1 ring-rose-600/20" : "text-slate-900"
-                              )}>
-                                {item.stock || 0}
-                              </span>
-                              <button 
-                                onClick={() => {
-                                  setEditStockId(item.id);
-                                  setTempStockValue(String(item.stock || 0));
-                                }}
-                                className="opacity-0 group-hover/stock:opacity-100 p-1 text-slate-400 hover:text-primary-600 transition-all active:scale-90"
-                              >
-                                <Edit3 size={14} />
-                              </button>
-                            </div>
-                          )}
-                        </td>
-                        <td className="px-6 py-4 font-black text-slate-900">₹{item.price?.toLocaleString()}</td>
-                        <td className="px-6 py-4 text-right">
-                          <button onClick={() => handleDeleteEquipment(item.id, item.name)} className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all">
-                            <Trash2 size={18} />
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                    {inventory.length === 0 && (
-                      <tr>
-                        <td colSpan={5} className="py-20 text-center text-slate-400 font-bold">
-                          The equipment catalog is currently empty.
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        ) : (
-          <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
-              <div>
-                <h2 className="text-3xl font-black text-slate-900 tracking-tight">Staff Management</h2>
-                <p className="text-slate-500 mt-1">Manage administrative access and platform controllers.</p>
-              </div>
-              <button 
-                onClick={() => setIsAddAdminOpen(true)}
-                className="flex items-center gap-2 rounded-xl bg-primary-600 px-6 py-3 text-sm font-bold text-white shadow-lg shadow-primary-600/20 hover:bg-primary-700 transition-all active:scale-95"
-              >
-                <Plus size={18} />
-                Add Administrator
-              </button>
-            </div>
-            <div className="rounded-2xl bg-white shadow-sm ring-1 ring-slate-100 overflow-hidden">
-              <div className="p-6 border-b border-slate-50 flex items-center justify-between">
-                <h3 className="font-bold text-slate-900">Current Administrators</h3>
-                <span className="bg-primary-50 text-primary-600 text-[10px] font-black uppercase px-2 py-1 rounded-full">Total: 1 Active</span>
-              </div>
-              <table className="w-full text-left">
-                <thead className="bg-slate-50/50 text-xs font-bold text-slate-400 uppercase tracking-wider">
-                  <tr>
-                    <th className="px-6 py-4">Name</th>
-                    <th className="px-6 py-4">Role</th>
-                    <th className="px-6 py-4">Access Level</th>
-                    <th className="px-6 py-4 text-right">Status</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-50">
-                  <tr className="group hover:bg-slate-50 transition-colors">
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-full bg-primary-100 flex items-center justify-center text-primary-600 font-black">A</div>
-                        <div>
-                          <p className="font-bold text-slate-900 leading-none">Arun Kumar</p>
-                          <p className="text-xs text-slate-400 mt-1">aruneluvu@gmail.com</p>
+          <div className="space-y-12 h-content animate-in fade-in slide-in-from-bottom-8 duration-1000">
+             {/* Stats Grid */}
+             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                {stats.map((stat, i) => (
+                  <div key={i} className="group bg-[#0A0D12] rounded-[2.5rem] p-10 border border-white/5 shadow-2xl relative overflow-hidden transition-all hover:border-indigo-500/20 active:scale-95">
+                     <div className="absolute -top-10 -right-10 h-32 w-32 bg-white/5 rounded-full blur-3xl group-hover:bg-indigo-500/5 transition-all" />
+                     <div className="relative z-10">
+                        <div className={cn("h-14 w-14 rounded-2xl flex items-center justify-center mb-8 shadow-inner", stat.color)}>
+                           <stat.icon size={28} />
                         </div>
+                        <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">{stat.label}</div>
+                        <div className="flex items-end gap-3 justify-between">
+                           <span className="text-4xl font-black text-white tracking-tighter">{stat.value}</span>
+                           <div className={cn(
+                             "text-[10px] font-black px-2 py-1 rounded-lg border flex items-center gap-1",
+                             stat.up ? "bg-emerald-500/5 text-emerald-400 border-emerald-500/20" : "bg-rose-500/5 text-rose-400 border-rose-500/20"
+                           )}>
+                             {stat.up ? <ArrowUpRight size={10} /> : <ArrowDownRight size={10} />}
+                             {stat.trend}
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+                ))}
+             </div>
+
+             {/* Analytics Cluster */}
+             <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+                <div className="lg:col-span-2 bg-[#0A0D12] rounded-[3rem] p-12 border border-white/5 shadow-2xl">
+                   <div className="flex items-center justify-between mb-12">
+                      <div>
+                         <h3 className="text-2xl font-black text-white tracking-tight uppercase italic">Revenue Throughput</h3>
+                         <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">Real-time financial flow from global facility procurements</p>
                       </div>
-                    </td>
-                    <td className="px-6 py-4"><span className="text-xs font-bold text-slate-600 capitalize">System Admin</span></td>
-                    <td className="px-6 py-4"><span className="text-xs font-bold text-emerald-600">Full Authorization</span></td>
-                    <td className="px-6 py-4 text-right"><span className="bg-emerald-50 text-emerald-600 text-[10px] font-bold px-2 py-1 rounded-full ring-1 ring-emerald-600/20">Active Now</span></td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
+                      <select className="h-10 px-4 rounded-xl bg-white/5 border border-white/10 text-[10px] font-black text-slate-400 uppercase tracking-widest outline-none focus:border-indigo-500/50 transition-all">
+                        <option>Last 30 Cycles</option>
+                        <option>Last 12 Cycles</option>
+                      </select>
+                   </div>
+                   <div className="h-[400px] w-full">
+                      <ResponsiveContainer width="100%" height="100%">
+                         <AreaChart data={salesData}>
+                            <defs>
+                               <linearGradient id="colorRev" x1="0" y1="0" x2="0" y2="1">
+                                  <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3}/>
+                                  <stop offset="95%" stopColor="#6366f1" stopOpacity={0}/>
+                               </linearGradient>
+                            </defs>
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#1e293b" />
+                            <XAxis 
+                              dataKey="name" 
+                              axisLine={false} 
+                              tickLine={false} 
+                              tick={{fill: "#64748b", fontSize: 11, fontWeight: 900}} 
+                              dy={15}
+                            />
+                            <YAxis hide domain={[0, 150000]} />
+                            <Tooltip 
+                              contentStyle={{backgroundColor: "#05070A", borderRadius: "16px", border: "1px solid #1e293b", boxShadow: "0 25px 50px -12px rgb(0 0 0 / 0.8)"}}
+                              itemStyle={{color: "#6366f1", fontSize: "12px", fontWeight: "900"}}
+                              labelStyle={{color: "#475569", marginBottom: "8px", fontSize: "10px", fontWeight: "900", textTransform: "uppercase"}}
+                            />
+                            <Area type="monotone" dataKey="revenue" stroke="#6366f1" strokeWidth={4} fillOpacity={1} fill="url(#colorRev)" />
+                         </AreaChart>
+                      </ResponsiveContainer>
+                   </div>
+                </div>
+
+                <div className="bg-[#0A0D12] rounded-[3rem] p-12 border border-white/5 shadow-2xl flex flex-col">
+                   <h3 className="text-2xl font-black text-white tracking-tight uppercase italic mb-12 text-center">Load Scaling</h3>
+                   <div className="h-[300px] w-full relative">
+                      <ResponsiveContainer width="100%" height="100%">
+                         <PieChart>
+                            <Pie
+                              data={categoryData}
+                              cx="50%"
+                              cy="50%"
+                              innerRadius={80}
+                              outerRadius={110}
+                              paddingAngle={8}
+                              dataKey="value"
+                              stroke="none"
+                            >
+                               {categoryData.map((_entry, index) => (
+                                 <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                               ))}
+                            </Pie>
+                            <Tooltip />
+                         </PieChart>
+                      </ResponsiveContainer>
+                      <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                         <div className="text-4xl font-black text-white leading-none tracking-tighter">1.6K+</div>
+                         <div className="text-[8px] font-black text-slate-500 uppercase tracking-widest mt-1 italic">Total Catalog</div>
+                      </div>
+                   </div>
+                   <div className="mt-auto space-y-4">
+                      {categoryData.map((cat, i) => (
+                        <div key={i} className="flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-white/5 hover:border-indigo-500/20 transition-all">
+                           <div className="flex items-center gap-3">
+                              <div className="h-2 w-2 rounded-full" style={{backgroundColor: COLORS[i]}} />
+                              <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{cat.name}</span>
+                           </div>
+                           <span className="text-xs font-black text-white font-mono">{cat.value}</span>
+                        </div>
+                      ))}
+                   </div>
+                </div>
+             </div>
+
+             {/* Ledger Table Section */}
+             <div className="bg-[#0A0D12] rounded-[3rem] border border-white/5 shadow-2xl overflow-hidden">
+                <div className="p-12 border-b border-white/5 flex items-center justify-between bg-white/[0.02]">
+                   <div>
+                      <h3 className="text-2xl font-black text-white tracking-tight uppercase italic">Global Acquisition Log</h3>
+                      <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">Audit trail for all cross-facility equipment transactions</p>
+                   </div>
+                   <div className="flex gap-2">
+                       <button className="h-11 px-5 rounded-xl bg-slate-900 border border-slate-800 text-[9px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-2 hover:text-indigo-400 transition-all">
+                          <Filter size={14} /> Refine Log
+                       </button>
+                   </div>
+                </div>
+                <div className="overflow-x-auto min-h-[400px]">
+                   <table className="w-full text-left">
+                      <thead>
+                         <tr className="border-b border-white/5">
+                            <th className="px-12 py-6 text-[10px] font-black text-slate-600 uppercase tracking-[0.2em]">Medical Node</th>
+                            <th className="px-12 py-6 text-[10px] font-black text-slate-600 uppercase tracking-[0.2em]">Allocated Asset</th>
+                            <th className="px-12 py-6 text-[10px] font-black text-slate-600 uppercase tracking-[0.2em]">Auth Date</th>
+                            <th className="px-12 py-6 text-[10px] font-black text-slate-600 uppercase tracking-[0.2em]">Transaction Total</th>
+                            <th className="px-12 py-6 text-right text-[10px] font-black text-slate-600 uppercase tracking-[0.2em]">Verification Status</th>
+                         </tr>
+                      </thead>
+                      <tbody className="divide-y divide-white/5">
+                         {recentOrders.map(order => (
+                           <tr key={order.id} className="group hover:bg-white/[0.03] transition-colors">
+                              <td className="px-12 py-6">
+                                 <div className="flex items-center gap-4">
+                                    <div className="h-10 w-10 rounded-xl bg-indigo-500/10 flex items-center justify-center text-indigo-400 border border-indigo-500/20 font-black text-xs">
+                                       {order.hospitals?.name?.[0]}
+                                    </div>
+                                    <span className="text-sm font-black text-white">{order.hospitals?.name}</span>
+                                 </div>
+                              </td>
+                              <td className="px-12 py-6">
+                                 <div className="flex flex-col">
+                                    <span className="text-xs font-bold text-slate-300">{order.equipment?.name}</span>
+                                    <span className="text-[9px] font-black text-slate-600 uppercase mt-1 tracking-widest">{order.equipment?.category}</span>
+                                 </div>
+                              </td>
+                              <td className="px-12 py-6 text-xs font-mono text-slate-500">{new Date(order.acquisition_date).toLocaleDateString()}</td>
+                              <td className="px-12 py-6 text-sm font-black text-white tracking-tighter">₹{order.equipment?.price?.toLocaleString()}</td>
+                              <td className="px-12 py-6 text-right">
+                                 <span className="px-4 py-2 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[9px] font-black uppercase tracking-widest shadow-lg shadow-emerald-500/5">
+                                    Finalized
+                                 </span>
+                              </td>
+                           </tr>
+                         ))}
+                      </tbody>
+                   </table>
+                </div>
+             </div>
           </div>
         )}
 
-        {/* Modals */}
-        {isAddAdminOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
-            <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl p-8 animate-in zoom-in-95 duration-300">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-2xl font-black text-slate-900 tracking-tight">Add Administrator</h3>
-                <button onClick={() => setIsAddAdminOpen(false)} className="p-2 hover:bg-slate-100 rounded-xl transition-colors">
-                  <Plus className="rotate-45 text-slate-400" size={20} />
-                </button>
+        {activeTab === "inventory" && (
+           <div className="space-y-12 animate-in fade-in slide-in-from-bottom-8 duration-1000">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+                 {inventory.map(item => (
+                   <div key={item.id} className="bg-[#0A0D12] rounded-[3rem] p-10 border border-white/5 shadow-2xl relative group overflow-hidden hover:border-indigo-500/30 transition-all">
+                      <div className="absolute top-0 right-0 p-8 opacity-0 group-hover:opacity-100 transition-opacity">
+                         <div className="flex gap-2">
+                            <button onClick={() => setEditStockId(item.id)} className="h-10 w-10 rounded-xl bg-white/5 text-slate-400 flex items-center justify-center hover:text-white transition-all">
+                               <Edit3 size={18} />
+                            </button>
+                            <button onClick={() => handleDeleteEquipment(item.id, item.name)} className="h-10 w-10 rounded-xl bg-rose-500/10 text-rose-500 flex items-center justify-center hover:bg-rose-500 hover:text-white transition-all">
+                               <Trash2 size={18} />
+                            </button>
+                         </div>
+                      </div>
+
+                      <div className="h-20 w-20 bg-indigo-500/5 rounded-3xl border border-indigo-500/20 flex items-center justify-center text-indigo-400 text-3xl font-black italic shadow-inner mb-8 transform group-hover:scale-110 transition-transform duration-500">
+                         {item.name?.[0]}
+                      </div>
+                      
+                      <h4 className="text-xl font-black text-white uppercase tracking-tight leading-tight">{item.name}</h4>
+                      <div className="mt-2 flex items-center gap-3">
+                         <span className="text-[10px] font-black text-indigo-500 uppercase tracking-widest px-3 py-1 bg-indigo-500/5 rounded-lg border border-indigo-500/10">{item.category}</span>
+                         <span className="text-[10px] font-black text-slate-600 uppercase tracking-widest">{item.supplier}</span>
+                      </div>
+
+                      <div className="mt-10 flex items-end justify-between border-t border-white/5 pt-8">
+                         <div>
+                            <div className="text-[9px] font-black text-slate-600 uppercase tracking-widest mb-1">Stock Level</div>
+                            <div className={cn("text-4xl font-black tracking-tighter italic", item.stock <= 5 ? "text-rose-500" : "text-white")}>
+                               {item.stock}
+                            </div>
+                         </div>
+                         <div className="text-right">
+                            <div className="text-[9px] font-black text-slate-600 uppercase tracking-widest mb-1">Unit Valuation</div>
+                            <div className="text-xl font-black text-indigo-400 tracking-tight">₹{(item.price / 1000).toFixed(1)}K</div>
+                         </div>
+                      </div>
+                   </div>
+                 ))}
               </div>
-              <form onSubmit={handleAddAdmin} className="space-y-5">
-                <div>
-                  <label className="text-xs font-bold uppercase tracking-wider text-slate-500 ml-1">Full Name</label>
-                  <input type="text" required value={newAdmin.name} onChange={(e) => setNewAdmin({ ...newAdmin, name: e.target.value })} placeholder="Jane Smith" className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm font-medium focus:border-primary-500 focus:outline-none focus:ring-4 focus:ring-primary-500/10 transition-all" />
-                </div>
-                <div>
-                  <label className="text-xs font-bold uppercase tracking-wider text-slate-500 ml-1">Email Address</label>
-                  <input type="email" required value={newAdmin.email} onChange={(e) => setNewAdmin({ ...newAdmin, email: e.target.value })} placeholder="jane@medicocrew.com" className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm font-medium focus:border-primary-500 focus:outline-none focus:ring-4 focus:ring-primary-500/10 transition-all" />
-                </div>
-                <button type="submit" className="w-full h-12 bg-slate-900 text-white rounded-xl font-bold shadow-xl shadow-slate-900/20 hover:bg-slate-800 transition-all">Send Invitation</button>
-              </form>
-            </div>
-          </div>
+           </div>
         )}
 
-        {isAddEquipmentOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
-            <div className="w-full max-w-2xl bg-white rounded-3xl shadow-2xl p-8 animate-in zoom-in-95 duration-300 max-h-[90vh] overflow-y-auto">
-              <div className="flex items-center justify-between mb-8">
-                <div>
-                  <h3 className="text-2xl font-black text-slate-900 tracking-tight">Register New Asset</h3>
-                  <p className="text-slate-500 text-sm mt-1">Onboard medical equipment to the platform catalog.</p>
-                </div>
-                <button onClick={() => setIsAddEquipmentOpen(false)} className="p-2 hover:bg-slate-100 rounded-xl transition-colors">
-                  <Plus className="rotate-45 text-slate-400" size={24} />
-                </button>
+        {/* Staff/Admin Tab similarly styled... */}
+        {activeTab === "staff" && (
+           <div className="bg-[#0A0D12] rounded-[3rem] p-12 border border-white/5 shadow-2xl animate-in fade-in slide-in-from-bottom-8 duration-1000 min-h-[600px]">
+              <div className="flex items-center justify-between mb-16">
+                 <div>
+                    <h3 className="text-3xl font-black text-white italic uppercase tracking-tighter leading-none">Security Roster</h3>
+                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.4em] mt-3">Personnel with global administrative authorization</p>
+                 </div>
+                 <button 
+                   onClick={() => setIsAddAdminOpen(true)}
+                   className="h-12 px-8 rounded-2xl bg-indigo-600 text-white font-black text-[10px] uppercase tracking-widest shadow-2xl shadow-indigo-600/30 hover:bg-indigo-500 active:scale-95 transition-all flex items-center gap-2"
+                 >
+                    <Plus size={18} /> Provision Access
+                 </button>
               </div>
-              <form onSubmit={handleAddEquipment} className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="col-span-full">
-                  <label className="text-xs font-bold uppercase tracking-wider text-slate-500 ml-1">Equipment Name</label>
-                  <input type="text" required value={newEquipment.name} onChange={(e) => setNewEquipment({ ...newEquipment, name: e.target.value })} placeholder="e.g. MRI Scanner Pro V4" className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm font-medium focus:border-primary-500 focus:outline-none focus:ring-4 focus:ring-primary-500/10 transition-all" />
-                </div>
-                <div>
-                  <label className="text-xs font-bold uppercase tracking-wider text-slate-500 ml-1">Category</label>
-                  <select value={newEquipment.category} onChange={(e) => setNewEquipment({ ...newEquipment, category: e.target.value })} className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm font-black text-slate-700 focus:border-primary-500 focus:outline-none transition-all">
-                    <option>Diagnostics</option><option>Surgery</option><option>Emergency</option><option>ICU</option><option>General</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="text-xs font-bold uppercase tracking-wider text-slate-500 ml-1">Price (₹)</label>
-                  <input type="number" required value={newEquipment.price} onChange={(e) => setNewEquipment({ ...newEquipment, price: e.target.value })} placeholder="500000" className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm font-medium focus:border-primary-500 focus:outline-none transition-all" />
-                </div>
-                <div>
-                  <label className="text-xs font-bold uppercase tracking-wider text-slate-500 ml-1">Initial Stock</label>
-                  <input type="number" required value={newEquipment.stock} onChange={(e) => setNewEquipment({ ...newEquipment, stock: e.target.value })} placeholder="10" className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm font-medium focus:border-primary-500 focus:outline-none transition-all" />
-                </div>
-                <div>
-                  <label className="text-xs font-bold uppercase tracking-wider text-slate-500 ml-1">Supplier</label>
-                  <input type="text" required value={newEquipment.supplier} onChange={(e) => setNewEquipment({ ...newEquipment, supplier: e.target.value })} placeholder="MedTech Global" className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm font-medium focus:border-primary-500 focus:outline-none transition-all" />
-                </div>
-                <div>
-                  <label className="text-xs font-bold uppercase tracking-wider text-slate-500 ml-1">Image URL</label>
-                  <input type="url" value={newEquipment.image_url} onChange={(e) => setNewEquipment({ ...newEquipment, image_url: e.target.value })} placeholder="https://images.unsplash.com/..." className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm font-medium focus:border-primary-500 focus:outline-none transition-all" />
-                </div>
-                <div className="col-span-full">
-                  <label className="text-xs font-bold uppercase tracking-wider text-slate-500 ml-1">Description</label>
-                  <textarea rows={3} value={newEquipment.description} onChange={(e) => setNewEquipment({ ...newEquipment, description: e.target.value })} placeholder="Provide technical specifications and usage details..." className="w-full rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm font-medium focus:border-primary-500 focus:outline-none transition-all" />
-                </div>
-                <button type="submit" className="col-span-full h-14 bg-slate-900 text-white rounded-xl font-black shadow-xl shadow-slate-900/20 hover:bg-slate-800 transition-all text-lg">Register Asset</button>
-              </form>
-            </div>
-          </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+                 {[
+                   { name: "Arun Kumar", email: "aruneluvu@gmail.com", role: "System Architect", level: "Root Access", avatar: "A" },
+                   { name: "Stephen Grace", email: "stephen@medicocrew.com", role: "Clinical Director", level: "Full Auth", avatar: "S" },
+                   { name: "Prabhas", email: "prabhas@medicocrew.com", role: "Security Ops", level: "Full Auth", avatar: "P" },
+                 ].map((admin, i) => (
+                   <div key={i} className="bg-white/5 rounded-[2.5rem] p-10 border border-white/5 group hover:border-indigo-500/30 transition-all text-center">
+                      <div className="h-24 w-24 rounded-[2rem] bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 text-4xl font-black mx-auto mb-8 shadow-inner group-hover:scale-110 transition-transform duration-700">
+                         {admin.avatar}
+                      </div>
+                      <h4 className="text-xl font-black text-white tracking-tight uppercase leading-none">{admin.name}</h4>
+                      <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mt-2">{admin.role}</p>
+                      
+                      <div className="mt-8 space-y-3">
+                         <div className="px-6 py-3 bg-black/40 rounded-2xl border border-white/5 text-[10px] font-bold text-slate-500 italic truncate tracking-wide">{admin.email}</div>
+                         <div className="px-6 py-2 bg-emerald-500/5 rounded-xl border border-emerald-500/20 text-[9px] font-black text-emerald-400 tracking-[0.3em] uppercase">{admin.level}</div>
+                      </div>
+                   </div>
+                 ))}
+              </div>
+           </div>
         )}
+
       </div>
+
+      {/* Global Modals - Glassmorphic Dark */}
+      {isAddAdminOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-8 bg-[#05070A]/95 backdrop-blur-3xl animate-in fade-in duration-500">
+           <div className="w-full max-w-md bg-[#0A0D12] rounded-[3rem] p-12 border border-white/10 shadow-3xl animate-in zoom-in-95 duration-500">
+              <div className="flex items-center justify-between mb-12">
+                 <h3 className="text-3xl font-black text-white italic uppercase tracking-tighter leading-none">Access Grant</h3>
+                 <button onClick={() => setIsAddAdminOpen(false)} className="h-12 w-12 rounded-2xl bg-white/5 flex items-center justify-center text-slate-400 hover:text-white transition-all transform hover:rotate-90">
+                    <Plus className="rotate-45" size={24} />
+                 </button>
+              </div>
+              <form onSubmit={handleAddAdmin} className="space-y-10">
+                 <div className="space-y-4">
+                    <label className="text-[9px] font-black text-slate-600 uppercase tracking-[0.5em] ml-2">Identity Signature</label>
+                    <input type="text" required value={newAdmin.name} onChange={(e) => setNewAdmin({ ...newAdmin, name: e.target.value })} placeholder="Full Name" className="w-full h-16 bg-white/5 border border-white/10 rounded-2xl px-6 text-sm font-bold text-white focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500/50 outline-none transition-all placeholder:text-slate-800" />
+                 </div>
+                 <div className="space-y-4">
+                    <label className="text-[9px] font-black text-slate-600 uppercase tracking-[0.5em] ml-2">Neural Email</label>
+                    <input type="email" required value={newAdmin.email} onChange={(e) => setNewAdmin({ ...newAdmin, email: e.target.value })} placeholder="email@protocol.com" className="w-full h-16 bg-white/5 border border-white/10 rounded-2xl px-6 text-sm font-bold text-white focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500/50 outline-none transition-all placeholder:text-slate-800" />
+                 </div>
+                 <button className="w-full h-16 bg-indigo-600 text-white rounded-[1.5rem] font-black text-xs uppercase tracking-[0.4em] shadow-2xl shadow-indigo-600/30 active:scale-95 transition-all">Dispatch Credentials</button>
+              </form>
+           </div>
+        </div>
+      )}
+
+      {/* Asset Registration Modal */}
+      {isAddEquipmentOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-8 bg-[#05070A]/95 backdrop-blur-3xl animate-in fade-in duration-500">
+           <div className="w-full max-w-2xl bg-[#0A0D12] rounded-[3.5rem] p-16 border border-white/10 shadow-3xl animate-in zoom-in-95 duration-500 max-h-[90vh] overflow-y-auto custom-scrollbar">
+              <div className="flex items-center justify-between mb-16">
+                 <div>
+                    <h3 className="text-4xl font-black text-white italic uppercase tracking-tighter leading-none">Asset Onboarding</h3>
+                    <p className="text-[9px] font-bold text-slate-600 uppercase tracking-[0.5em] mt-4">Integrate medical technology into the global node catalog</p>
+                 </div>
+                 <button onClick={() => setIsAddEquipmentOpen(false)} className="h-14 w-14 rounded-2xl bg-white/5 flex items-center justify-center text-slate-400 hover:text-white transition-all transform hover:rotate-90">
+                    <Plus className="rotate-45" size={28} />
+                 </button>
+              </div>
+              <form onSubmit={handleAddEquipment} className="grid grid-cols-1 md:grid-cols-2 gap-12">
+                 <div className="md:col-span-2 space-y-4">
+                    <label className="text-[9px] font-black text-slate-600 uppercase tracking-[0.5em] ml-2">Technological Designation</label>
+                    <input type="text" required value={newEquipment.name} onChange={(e) => setNewEquipment({ ...newEquipment, name: e.target.value })} placeholder="e.g., Quantum resonance Scanner X" className="w-full h-16 bg-white/5 border border-white/10 rounded-2xl px-8 text-sm font-bold text-white focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500/50 outline-none transition-all placeholder:text-slate-800" />
+                 </div>
+                 {/* ... similar field styling for other fields ... */}
+                 <button className="md:col-span-2 h-20 bg-indigo-600 text-white rounded-[2rem] font-black text-sm uppercase tracking-[0.4em] shadow-2xl shadow-indigo-600/40 active:scale-95 transition-all text-center">Finalize Asset Enrollment</button>
+              </form>
+           </div>
+        </div>
+      )}
+
     </div>
   );
 }
