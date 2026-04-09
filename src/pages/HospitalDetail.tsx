@@ -168,7 +168,7 @@ export default function HospitalDetail() {
     }
     
     setIsSubmitting(true);
-    const toastId = showToast("Generating medical token...", "loading");
+    const toastId = showToast("Booking appointment...", "loading");
 
     try {
       // Generate a structured medical token
@@ -188,7 +188,7 @@ export default function HospitalDetail() {
       showToast(`Booking Successful! Your token is ${token}. Track it in your dashboard.`, "success");
     } catch (err: any) {
       hideToast(toastId);
-      showToast(err.message || "Failed to establish booking payload.", "error");
+      showToast(err.message || "Failed to book appointment.", "error");
     } finally {
       setIsSubmitting(false);
     }
@@ -203,7 +203,7 @@ export default function HospitalDetail() {
     <div className="min-h-screen bg-slate-50 flex items-center justify-center">
       <div className="text-center">
         <Loader2 className="animate-spin text-primary-600 mx-auto mb-4" size={48} />
-        <p className="text-slate-500 font-bold">Connecting to facility analytics...</p>
+        <p className="text-slate-500 font-bold">Loading hospital details...</p>
       </div>
     </div>
   );
@@ -283,13 +283,13 @@ export default function HospitalDetail() {
               <img src={hospital.image_url} alt={hospital.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000" />
             ) : (
               <div className="h-full w-full flex items-center justify-center text-primary-300 font-black italic text-3xl opacity-50">
-                Facility Gallery Placeholder
+                Hospital Image
               </div>
             )}
           </div>
 
           <div className="rounded-3xl bg-white p-8 shadow-sm ring-1 ring-slate-100">
-            <h3 className="text-2xl font-black text-slate-800 tracking-tight mb-6">About the Facility</h3>
+            <h3 className="text-2xl font-black text-slate-800 tracking-tight mb-6">About the Hospital</h3>
             <p className="text-slate-600 leading-relaxed text-lg italic">
               "{hospital.description || "No description available for this facility yet."}"
             </p>
@@ -332,10 +332,10 @@ export default function HospitalDetail() {
               <div className="relative z-10">
                 <div className="flex items-center gap-3 mb-4">
                   <Ticket className="text-primary-400" size={28} />
-                  <h3 className="text-2xl font-black tracking-tight">Redeem Patient Token</h3>
+                  <h3 className="text-2xl font-black tracking-tight">Rate Your Visit</h3>
                 </div>
                 <p className="text-slate-400 font-medium mb-8 max-w-lg">
-                  Provided with a token after your visit? Enter it below to unlock detailed rating options for this facility and its equipment.
+                  Did you receive a token for your visit? Enter it below to rate the hospital and its equipment.
                 </p>
                 
                 <div className="flex flex-col sm:flex-row gap-4">
@@ -354,7 +354,7 @@ export default function HospitalDetail() {
                     disabled={isVerifyingToken || !tokenInput}
                     className="h-14 px-8 rounded-2xl bg-primary-600 font-black text-white hover:bg-primary-700 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
                   >
-                    {isVerifyingToken ? <Loader2 className="animate-spin" size={20} /> : "Validate Token"}
+                    {isVerifyingToken ? <Loader2 className="animate-spin" size={20} /> : "Submit Token"}
                   </button>
                 </div>
                 {tokenError && <p className="mt-4 text-rose-400 text-sm font-bold flex items-center gap-2"><AlertCircle size={16} /> {tokenError}</p>}
@@ -371,7 +371,7 @@ export default function HospitalDetail() {
                   activeTab === "reviews" ? "border-primary-600 text-primary-600 bg-white" : "border-transparent text-slate-400 hover:text-slate-600"
                 )}
               >
-                Patient Experiences ({reviews.length})
+                Patient Reviews ({reviews.length})
               </button>
               <button 
                 onClick={() => setActiveTab("services")}
@@ -389,7 +389,7 @@ export default function HospitalDetail() {
                   activeTab === "staff" ? "border-primary-600 text-primary-600 bg-white" : "border-transparent text-slate-400 hover:text-slate-600"
                 )}
               >
-                Clinical Experts
+                Doctors & Staff
               </button>
               <button 
                 onClick={() => setActiveTab("assets")}
@@ -398,7 +398,7 @@ export default function HospitalDetail() {
                   activeTab === "assets" ? "border-primary-600 text-primary-600 bg-white" : "border-transparent text-slate-400 hover:text-slate-600"
                 )}
               >
-                Verified Assets
+                Equipment List
               </button>
             </div>
 
@@ -501,7 +501,7 @@ export default function HospitalDetail() {
                           <div className="h-12 w-12 rounded-xl bg-white flex items-center justify-center text-primary-600 shadow-sm ring-1 ring-slate-100">
                              <Package size={24} />
                           </div>
-                          <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest bg-emerald-50 px-2 py-0.5 rounded ring-1 ring-emerald-100">Verified Unit</span>
+                          <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest bg-emerald-50 px-2 py-0.5 rounded ring-1 ring-emerald-100">Verified Equipment</span>
                        </div>
                        <h4 className="font-black text-slate-900 group-hover:text-primary-600 transition-colors">{item.equipment?.name}</h4>
                        <p className="text-[10px] font-bold text-slate-400 mt-1 italic line-clamp-1">{item.equipment?.description}</p>
@@ -704,7 +704,7 @@ export default function HospitalDetail() {
                 onClick={() => setShowContactModal(false)}
                 className="mt-8 w-full py-4 rounded-2xl bg-slate-900 text-white font-black text-sm active:scale-95 transition-all"
               >
-                Close Protocol
+                Close
               </button>
            </div>
         </div>

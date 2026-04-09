@@ -31,8 +31,8 @@ export default function HomePage() {
   }, []);
 
   const featuredStats = [
-    { label: "Partner Facilities", value: "320+", icon: Activity, color: "text-indigo-400" },
-    { label: "Medical Assets", value: "15k+", icon: Database, color: "text-teal-400" },
+    { label: "Registered Hospitals", value: "320+", icon: Activity, color: "text-indigo-400" },
+    { label: "Medical Equipment", value: "15k+", icon: Database, color: "text-teal-400" },
     { label: "Verified Reviews", value: "82k+", icon: Star, color: "text-pink-400" },
     { label: "Active Users", value: "2M+", icon: Users, color: "text-emerald-400" },
   ];
@@ -59,7 +59,7 @@ export default function HomePage() {
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-indigo-400 opacity-75"></span>
                 <span className="relative inline-flex h-2 w-2 rounded-full bg-indigo-500"></span>
               </span>
-              World's Premier Healthcare Command
+              Modern Healthcare Management
             </div>
             
             <h1 className="text-6xl md:text-8xl lg:text-[9rem] font-black tracking-tighter text-white leading-[0.85] italic mb-10 mix-blend-difference animate-in fade-in slide-in-from-bottom-8 duration-1000">
@@ -68,7 +68,7 @@ export default function HomePage() {
             </h1>
 
             <p className="max-w-2xl text-lg md:text-xl font-medium leading-relaxed text-slate-400 mb-12 animate-in fade-in slide-in-from-bottom duration-1000 delay-200">
-              Onboarding 320+ premium medical facilities into a unified management ecosystem. Experience absolute transparency and efficiency in global healthcare.
+              Connecting 320+ premium medical facilities into a unified management platform. Experience easy and efficient healthcare management.
             </p>
 
             <div className="flex flex-col sm:flex-row items-center gap-6 animate-in fade-in slide-in-from-bottom duration-1000 delay-300">
@@ -76,7 +76,7 @@ export default function HomePage() {
                 to="/hospitals"
                 className="h-16 px-12 rounded-2xl bg-indigo-600 text-[11px] font-black uppercase tracking-[0.2em] text-white shadow-2xl shadow-indigo-600/30 hover:bg-indigo-500 hover:shadow-indigo-600/50 transition-all active:scale-95 flex items-center gap-3 group"
               >
-                Access Network
+                View Hospitals
                 <ChevronRight size={20} className="group-hover:translate-x-1 transition-transform" />
               </Link>
               {!session && (
@@ -84,7 +84,7 @@ export default function HomePage() {
                   to="/auth"
                   className="h-16 px-12 rounded-2xl bg-white/5 border border-white/10 text-[11px] font-black uppercase tracking-[0.2em] text-white hover:bg-white/10 transition-all active:scale-95 flex items-center gap-3 backdrop-blur-xl"
                 >
-                  Onboard Facility
+                  Add Hospital
                 </Link>
               )}
             </div>
@@ -130,8 +130,8 @@ export default function HomePage() {
                        <Play size={32} className="fill-current" />
                     </div>
                     <div className="text-center group-hover:translate-y-[-4px] transition-transform duration-500">
-                       <div className="text-[10px] font-black text-indigo-500 uppercase tracking-[0.4em] mb-2 text-center">Operational Briefing</div>
-                       <h2 className="text-4xl font-black text-white italic tracking-tighter uppercase leading-none">Terminal Alpha-01 Overview</h2>
+                       <div className="text-[10px] font-black text-indigo-500 uppercase tracking-[0.4em] mb-2 text-center">Video Overview</div>
+                       <h2 className="text-4xl font-black text-white italic tracking-tighter uppercase leading-none">Platform Overview</h2>
                     </div>
                   </div>
 
@@ -143,7 +143,7 @@ export default function HomePage() {
                        className="text-[9px] font-black text-slate-600 uppercase tracking-[0.3em] hover:text-indigo-400 transition-colors border-b border-white/5 pb-1"
                        onClick={(e) => e.stopPropagation()}
                      >
-                       Launch External Interface
+                       View Full Video
                      </a>
                   </div>
                 </div>
@@ -177,11 +177,9 @@ export default function HomePage() {
         <div className="container mx-auto px-6 lg:px-10">
           <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-10 mb-24">
             <div>
-              <div className="text-[10px] font-black text-indigo-500 uppercase tracking-[0.5em] mb-4">Institutional Roster</div>
-              <h2 className="text-5xl font-black tracking-tighter text-white italic leading-none">Global Network Nodes</h2>
-              <p className="mt-4 text-lg text-slate-500 font-medium max-w-xl italic">
-                 Explore state-of-the-art facilities already synchronized with the MedicoCrew command center.
-              </p>
+              <div className="text-[10px] font-black text-indigo-500 uppercase tracking-[0.5em] mb-4">Our Hospitals</div>
+              <h2 className="text-5xl font-black tracking-tighter text-white italic leading-none">Hospital Network</h2>
+                 Explore state-of-the-art hospitals already using the MedicoCrew platform.
             </div>
             <Link to="/hospitals" className="h-14 px-8 rounded-2xl bg-white/5 border border-white/10 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 hover:text-white hover:bg-white/10 transition-all flex items-center gap-3">
               Full Directory <ArrowRight size={18} />
@@ -225,7 +223,7 @@ export default function HomePage() {
                             : "bg-indigo-600 text-white hover:bg-indigo-500"
                         )}
                       >
-                        {session ? "Access Node Interface" : "Authorize View"}
+                        {session ? "View Hospital" : "Login to View"}
                         <ChevronRight size={18} />
                       </Link>
                     </div>
@@ -245,14 +243,14 @@ export default function HomePage() {
                 <ShieldCheck size={48} />
              </div>
              <h2 className="text-5xl md:text-7xl font-black text-white italic tracking-tighter leading-none mb-8">Synchronize Your Node.</h2>
-             <p className="mx-auto mt-8 max-w-3xl text-xl text-slate-500 font-medium leading-relaxed italic mb-16">
-                Register your institution into the MedicoCrew ecosystem. Real-time patient analytics, procurement throughput monitoring, and global synchronization.
-             </p>
+              <p className="mx-auto mt-8 max-w-3xl text-xl text-slate-500 font-medium leading-relaxed italic mb-16">
+                Register your hospital with the MedicoCrew platform. Track patient appointments, equipment inventory, and reviews in one place.
+              </p>
              <Link
                 to="/auth"
                 className="inline-flex h-20 px-16 rounded-[2rem] bg-indigo-600 text-[11px] font-black uppercase tracking-[0.4em] text-white shadow-3xl shadow-indigo-600/40 hover:bg-indigo-500 transition-all active:scale-95 items-center gap-4"
              >
-                Initiate Onboarding <ChevronRight size={20} />
+                Get Started <ChevronRight size={20} />
              </Link>
           </div>
       </section>

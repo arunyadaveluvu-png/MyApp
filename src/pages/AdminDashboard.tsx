@@ -64,10 +64,10 @@ export default function AdminDashboard() {
 
   const handleAddAdmin = async (e: React.FormEvent) => {
     e.preventDefault();
-    const tid = showToast("Provisioning administrative credentials...", "loading");
+    const tid = showToast("Sending admin invitation...", "loading");
     setTimeout(() => {
       hideToast(tid);
-      showToast(`Encrypted invitation dispatched to ${newAdmin.email}`, "success");
+      showToast(`Invitation sent to ${newAdmin.email}`, "success");
       setIsAddAdminOpen(false);
       setNewAdmin({ name: "", email: "" });
     }, 1500);
@@ -76,7 +76,7 @@ export default function AdminDashboard() {
   const handleAddEquipment = async (e: React.FormEvent) => {
     e.preventDefault();
     const isEdit = !!editingEquipment;
-    const toastId = showToast(isEdit ? "Synchronizing asset updates..." : "Registering asset in global ledger...", "loading");
+    const toastId = showToast(isEdit ? "Saving changes..." : "Adding equipment...", "loading");
     
     try {
       if (isEdit) {
@@ -97,7 +97,7 @@ export default function AdminDashboard() {
           rating: 4.5
         }]);
         if (error) throw error;
-        showToast(`${newEquipment.name} cataloged in the ecosystem.`, "success");
+        showToast(`${newEquipment.name} added to the list.`, "success");
       }
 
       hideToast(toastId);
@@ -114,11 +114,11 @@ export default function AdminDashboard() {
 
   const decommissionEquipment = async (id: string) => {
     if (!confirm("Are you sure you want to decommission this asset? This action is permanent.")) return;
-    const toastId = showToast("Decommissioning medical asset...", "loading");
+    const toastId = showToast("Removing equipment...", "loading");
     try {
       const { error } = await supabase.from("equipment").delete().eq("id", id);
       if (error) throw error;
-      showToast("Asset successfully removed from global catalog.", "success");
+      showToast("Equipment removed successfully.", "success");
       fetchInventory();
       fetchStats();
     } catch (err: any) {
@@ -129,7 +129,7 @@ export default function AdminDashboard() {
   };
 
   const downloadSalesReport = () => {
-    const tid = showToast("Compiling global financial ledger...", "loading");
+    const tid = showToast("Generating report...", "loading");
     
     if (recentOrders.length === 0) {
       hideToast(tid);
@@ -154,7 +154,7 @@ export default function AdminDashboard() {
     document.body.removeChild(link);
     
     hideToast(tid);
-    showToast("Ledger exported successfully.", "success");
+    showToast("Report exported successfully.", "success");
   };
 
   const fetchInventory = async () => {
@@ -215,7 +215,7 @@ export default function AdminDashboard() {
   return (
     <div className="bg-[#05070A] min-h-screen text-slate-400 font-sans selection:bg-indigo-500/30 selection:text-indigo-200">
       
-      {/* Executive Command Bar */}
+      {/* Navigation Menu */}
       <nav className="sticky top-0 z-50 bg-[#05070A]/80 backdrop-blur-2xl border-b border-white/5 px-10 h-20 flex items-center justify-between">
         <div className="flex items-center gap-12">
           <Link to="/" className="flex items-center gap-3 group">
@@ -247,7 +247,7 @@ export default function AdminDashboard() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-600 group-focus-within:text-indigo-500 transition-colors" size={16} />
             <input 
               type="text" 
-              placeholder="Query global data..." 
+              placeholder="Search..." 
               className="w-full h-11 bg-white/5 border border-white/10 rounded-2xl pl-10 pr-4 text-xs font-bold text-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500/50 outline-none transition-all placeholder:text-slate-700 font-mono"
             />
           </div>
@@ -268,9 +268,9 @@ export default function AdminDashboard() {
            <div>
               <div className="flex items-center gap-3 text-[10px] font-black text-indigo-400 uppercase tracking-[0.5em] mb-4">
                  <Activity size={14} />
-                 Terminal Alpha-01
+                 System Status
               </div>
-              <h1 className="text-5xl font-black text-white tracking-tighter italic">Platform Overlord</h1>
+              <h1 className="text-5xl font-black text-white tracking-tighter italic">Admin Dashboard</h1>
               <p className="mt-3 text-slate-500 font-medium max-w-xl">
                  Real-time synchronization with global healthcare nodes. Monitoring transaction throughput and facility health across the ecosystem.
               </p>
@@ -280,13 +280,13 @@ export default function AdminDashboard() {
                 onClick={downloadSalesReport}
                 className="h-14 px-8 rounded-2xl bg-white/5 border border-white/10 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 hover:text-white hover:bg-white/10 transition-all flex items-center gap-3"
               >
-                <FileDown size={18} /> Download Ledger
+                <FileDown size={18} /> Download Report
               </button>
               <button 
                 onClick={() => setIsAddEquipmentOpen(true)}
                 className="h-14 px-8 rounded-2xl bg-indigo-600 text-white text-[10px] font-black uppercase tracking-[0.2em] shadow-2xl shadow-indigo-600/30 hover:bg-indigo-500 transition-all active:scale-95 flex items-center gap-3"
               >
-                <Plus size={18} /> Register Asset
+                <Plus size={18} /> Add Equipment
               </button>
            </div>
         </header>
@@ -323,8 +323,8 @@ export default function AdminDashboard() {
                 <div className="lg:col-span-2 bg-[#0A0D12] rounded-[3rem] p-12 border border-white/5 shadow-2xl">
                    <div className="flex items-center justify-between mb-12">
                       <div>
-                         <h3 className="text-2xl font-black text-white tracking-tight uppercase italic">Revenue Throughput</h3>
-                         <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">Real-time financial flow from global facility procurements</p>
+                         <h3 className="text-2xl font-black text-white tracking-tight uppercase italic">Revenue History</h3>
+                         <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">Real-time revenue from equipment orders</p>
                       </div>
                       <select className="h-10 px-4 rounded-xl bg-white/5 border border-white/10 text-[10px] font-black text-slate-400 uppercase tracking-widest outline-none focus:border-indigo-500/50 transition-all">
                         <option>Last 30 Cycles</option>
@@ -405,8 +405,8 @@ export default function AdminDashboard() {
              <div className="bg-[#0A0D12] rounded-[3rem] border border-white/5 shadow-2xl overflow-hidden">
                 <div className="p-12 border-b border-white/5 flex items-center justify-between bg-white/[0.02]">
                    <div>
-                      <h3 className="text-2xl font-black text-white tracking-tight uppercase italic">Global Acquisition Log</h3>
-                      <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">Audit trail for all cross-facility equipment transactions</p>
+                      <h3 className="text-2xl font-black text-white tracking-tight uppercase italic">Order History</h3>
+                      <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">List of all equipment orders</p>
                    </div>
                    <div className="flex gap-2">
                        <button className="h-11 px-5 rounded-xl bg-slate-900 border border-slate-800 text-[9px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-2 hover:text-indigo-400 transition-all">
@@ -582,8 +582,8 @@ export default function AdminDashboard() {
            <div className="bg-[#0A0D12] rounded-[3rem] border border-white/5 shadow-2xl p-12 animate-in fade-in slide-in-from-bottom-8 duration-1000">
               <div className="flex items-center justify-between mb-12">
                  <div>
-                    <h3 className="text-2xl font-black text-white tracking-tight uppercase italic">Global Facility Grid</h3>
-                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">Status and verification monitor for all platform facility nodes</p>
+                    <h3 className="text-2xl font-black text-white tracking-tight uppercase italic">Hospital Network</h3>
+                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">Status and verification monitor for all registered hospitals</p>
                  </div>
               </div>
               
@@ -605,7 +605,7 @@ export default function AdminDashboard() {
                          </div>
                       </div>
                       <div className="flex flex-col items-end gap-2 text-right">
-                         <div className="text-[9px] font-black text-slate-600 uppercase tracking-widest">Clinical Expert Load</div>
+                         <div className="text-[9px] font-black text-slate-600 uppercase tracking-widest">Number of specialists</div>
                          <div className="text-2xl font-black text-indigo-400">{hospital.doctors || 0} specialists</div>
                       </div>
                    </div>
@@ -618,14 +618,14 @@ export default function AdminDashboard() {
            <div className="bg-[#0A0D12] rounded-[3rem] p-12 border border-white/5 shadow-2xl animate-in fade-in slide-in-from-bottom-8 duration-1000 min-h-[600px]">
               <div className="flex items-center justify-between mb-16">
                  <div>
-                    <h3 className="text-3xl font-black text-white italic uppercase tracking-tighter leading-none">Security Roster</h3>
-                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.4em] mt-3">Personnel with global administrative authorization</p>
+                    <h3 className="text-3xl font-black text-white italic uppercase tracking-tighter leading-none">Admin List</h3>
+                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.4em] mt-3">Staff with administrative access</p>
                  </div>
                  <button 
                    onClick={() => setIsAddAdminOpen(true)}
                    className="h-12 px-8 rounded-2xl bg-indigo-600 text-white font-black text-[10px] uppercase tracking-widest shadow-2xl shadow-indigo-600/30 hover:bg-indigo-500 active:scale-95 transition-all flex items-center gap-2"
                  >
-                    <Plus size={18} /> Provision Access
+                    <Plus size={18} /> Invite Admin
                  </button>
               </div>
 
@@ -661,21 +661,21 @@ export default function AdminDashboard() {
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-8 bg-[#05070A]/95 backdrop-blur-3xl animate-in fade-in duration-500">
            <div className="w-full max-w-md bg-[#0A0D12] rounded-[3rem] p-12 border border-white/10 shadow-3xl animate-in zoom-in-95 duration-500">
               <div className="flex items-center justify-between mb-12">
-                 <h3 className="text-3xl font-black text-white italic uppercase tracking-tighter leading-none">Access Grant</h3>
+                 <h3 className="text-3xl font-black text-white italic uppercase tracking-tighter leading-none">Add Admin</h3>
                  <button onClick={() => setIsAddAdminOpen(false)} className="h-12 w-12 rounded-2xl bg-white/5 flex items-center justify-center text-slate-400 hover:text-white transition-all transform hover:rotate-90">
                     <Plus className="rotate-45" size={24} />
                  </button>
               </div>
               <form onSubmit={handleAddAdmin} className="space-y-10">
                  <div className="space-y-4">
-                    <label className="text-[9px] font-black text-slate-600 uppercase tracking-[0.5em] ml-2">Identity Signature</label>
+                    <label className="text-[9px] font-black text-slate-600 uppercase tracking-[0.5em] ml-2">Full Name</label>
                     <input type="text" required value={newAdmin.name} onChange={(e) => setNewAdmin({ ...newAdmin, name: e.target.value })} placeholder="Full Name" className="w-full h-16 bg-white/5 border border-white/10 rounded-2xl px-6 text-sm font-bold text-white focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500/50 outline-none transition-all placeholder:text-slate-800" />
                  </div>
                  <div className="space-y-4">
-                    <label className="text-[9px] font-black text-slate-600 uppercase tracking-[0.5em] ml-2">Neural Email</label>
+                    <label className="text-[9px] font-black text-slate-600 uppercase tracking-[0.5em] ml-2">Email Address</label>
                     <input type="email" required value={newAdmin.email} onChange={(e) => setNewAdmin({ ...newAdmin, email: e.target.value })} placeholder="email@protocol.com" className="w-full h-16 bg-white/5 border border-white/10 rounded-2xl px-6 text-sm font-bold text-white focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500/50 outline-none transition-all placeholder:text-slate-800" />
                  </div>
-                 <button className="w-full h-16 bg-indigo-600 text-white rounded-[1.5rem] font-black text-xs uppercase tracking-[0.4em] shadow-2xl shadow-indigo-600/30 active:scale-95 transition-all">Dispatch Credentials</button>
+                 <button className="w-full h-16 bg-indigo-600 text-white rounded-[1.5rem] font-black text-xs uppercase tracking-[0.4em] shadow-2xl shadow-indigo-600/30 active:scale-95 transition-all">Send Invite</button>
               </form>
            </div>
         </div>
@@ -687,8 +687,8 @@ export default function AdminDashboard() {
            <div className="w-full max-w-2xl bg-[#0A0D12] rounded-[3.5rem] p-16 border border-white/10 shadow-3xl animate-in zoom-in-95 duration-500 max-h-[90vh] overflow-y-auto custom-scrollbar">
               <div className="flex items-center justify-between mb-16">
                  <div>
-                    <h3 className="text-4xl font-black text-white italic uppercase tracking-tighter leading-none">{editingEquipment ? "Modify Asset" : "Asset Onboarding"}</h3>
-                    <p className="text-[9px] font-bold text-slate-600 uppercase tracking-[0.5em] mt-4">Integrate medical technology into the global node catalog</p>
+                    <h3 className="text-4xl font-black text-white italic uppercase tracking-tighter leading-none">{editingEquipment ? "Edit Equipment" : "Add Equipment"}</h3>
+                    <p className="text-[9px] font-bold text-slate-600 uppercase tracking-[0.5em] mt-4">Add new medical technology to the list</p>
                  </div>
                  <button 
                   onClick={() => {
@@ -702,7 +702,7 @@ export default function AdminDashboard() {
               </div>
               <form onSubmit={handleAddEquipment} className="grid grid-cols-1 md:grid-cols-2 gap-12">
                  <div className="md:col-span-2 space-y-4">
-                    <label className="text-[9px] font-black text-slate-600 uppercase tracking-[0.5em] ml-2">Technological Designation</label>
+                    <label className="text-[9px] font-black text-slate-600 uppercase tracking-[0.5em] ml-2">Equipment Name</label>
                     <input type="text" required value={newEquipment.name} onChange={(e) => setNewEquipment({ ...newEquipment, name: e.target.value })} placeholder="e.g., Quantum resonance Scanner X" className="w-full h-16 bg-white/5 border border-white/10 rounded-2xl px-8 text-sm font-bold text-white focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500/50 outline-none transition-all placeholder:text-slate-800" />
                  </div>
                  <div className="space-y-4">
@@ -712,7 +712,7 @@ export default function AdminDashboard() {
                     </select>
                  </div>
                  <div className="space-y-4">
-                    <label className="text-[9px] font-black text-slate-600 uppercase tracking-[0.5em] ml-2">Market Valuation (₹)</label>
+                    <label className="text-[9px] font-black text-slate-600 uppercase tracking-[0.5em] ml-2">Price (₹)</label>
                     <input type="number" required value={newEquipment.price} onChange={(e) => setNewEquipment({ ...newEquipment, price: e.target.value })} placeholder="Price" className="w-full h-16 bg-white/5 border border-white/10 rounded-2xl px-8 text-sm font-bold text-white focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500/50 outline-none transition-all" />
                  </div>
                  <div className="space-y-4">
@@ -720,15 +720,15 @@ export default function AdminDashboard() {
                     <input type="number" required value={newEquipment.stock} onChange={(e) => setNewEquipment({ ...newEquipment, stock: e.target.value })} placeholder="Available Units" className="w-full h-16 bg-white/5 border border-white/10 rounded-2xl px-8 text-sm font-bold text-white focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500/50 outline-none transition-all" />
                  </div>
                  <div className="space-y-4">
-                    <label className="text-[9px] font-black text-slate-600 uppercase tracking-[0.5em] ml-2">Asset Visual (URL)</label>
+                    <label className="text-[9px] font-black text-slate-600 uppercase tracking-[0.5em] ml-2">Image URL</label>
                     <input type="text" value={newEquipment.image_url} onChange={(e) => setNewEquipment({ ...newEquipment, image_url: e.target.value })} placeholder="https://unsplash.com/..." className="w-full h-16 bg-white/5 border border-white/10 rounded-2xl px-8 text-sm font-bold text-white focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500/50 outline-none transition-all" />
                  </div>
                  <div className="md:col-span-2 space-y-4">
-                    <label className="text-[9px] font-black text-slate-600 uppercase tracking-[0.5em] ml-2">Strategic Description</label>
+                    <label className="text-[9px] font-black text-slate-600 uppercase tracking-[0.5em] ml-2">Description</label>
                     <textarea value={newEquipment.description} onChange={(e) => setNewEquipment({ ...newEquipment, description: e.target.value })} placeholder="Detail clinical advantages..." className="w-full h-32 bg-white/5 border border-white/10 rounded-2xl px-8 py-4 text-sm font-bold text-white focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500/50 outline-none transition-all resize-none" />
                  </div>
                  <button className="md:col-span-2 h-20 bg-indigo-600 text-white rounded-[2rem] font-black text-sm uppercase tracking-[0.4em] shadow-2xl shadow-indigo-600/40 active:scale-95 transition-all text-center">
-                    {editingEquipment ? "Synchronize Updates" : "Finalize Asset Enrollment"}
+                    {editingEquipment ? "Save Changes" : "Save Equipment"}
                  </button>
               </form>
            </div>

@@ -119,7 +119,7 @@ export default function ManagementDashboard() {
     if (!hospital?.id) return;
     
     setIsSaving(true);
-    const toastId = showToast("Synchronizing facility data...", "loading");
+    const toastId = showToast("Saving hospital settings...", "loading");
 
     try {
       const { error } = await supabase
@@ -129,7 +129,7 @@ export default function ManagementDashboard() {
 
       if (error) throw error;
       setHospital(hospitalForm);
-      showToast("Clinical profile synchronized.", "success");
+      showToast("Hospital settings saved.", "success");
     } catch (err: any) {
       showToast(err.message, "error");
     } finally {
@@ -143,7 +143,7 @@ export default function ManagementDashboard() {
     if (!hospital?.id) return;
 
     setIsSaving(true);
-    const toastId = showToast("Processing clinical roster...", "loading");
+    const toastId = showToast("Updating staff list...", "loading");
 
     try {
       if (currentStaff.id) {
@@ -174,13 +174,13 @@ export default function ManagementDashboard() {
   };
 
   const removeStaff = async (sid: string) => {
-    if (!confirm("Decommission this staff record?")) return;
+    if (!confirm("Remove this staff member?")) return;
     const toastId = showToast("Removing record...", "loading");
     try {
       const { error } = await supabase.from("hospital_staff").delete().eq("id", sid);
       if (error) throw error;
       setStaff(staff.filter(s => s.id !== sid));
-      showToast("Record decommissioned.", "success");
+      showToast("Staff member removed.", "success");
     } catch (err: any) {
       showToast(err.message, "error");
     } finally {
@@ -234,14 +234,14 @@ export default function ManagementDashboard() {
           </div>
 
           <nav className="flex-grow space-y-1.5 px-6">
-            <div className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] ml-4 mb-4">Command Center</div>
+            <div className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] ml-4 mb-4">Dashboard Menu</div>
             {[
-              { id: "overview", label: "Clinical Pulse", icon: BarChart3 },
-              { id: "appointments", label: "Patient Queue", icon: Calendar },
-              { id: "staff", label: "Clinical Roster", icon: Users },
-              { id: "inventory", label: "Resource Vault", icon: Database },
-              { id: "feedback", label: "Patient Voice", icon: MessageSquare },
-              { id: "settings", label: "Facility Config", icon: Settings },
+              { id: "overview", label: "Clinic Stats", icon: BarChart3 },
+              { id: "appointments", label: "Appointments", icon: Calendar },
+              { id: "staff", label: "Staff List", icon: Users },
+              { id: "inventory", label: "Inventory", icon: Database },
+              { id: "feedback", label: "Reviews", icon: MessageSquare },
+              { id: "settings", label: "Hospital Settings", icon: Settings },
             ].map((item) => (
               <button
                 key={item.id}
@@ -269,14 +269,14 @@ export default function ManagementDashboard() {
                    </div>
                    <div className="overflow-hidden">
                       <p className="text-xs font-black text-white truncate">{profile?.full_name}</p>
-                      <p className="text-[10px] font-bold text-slate-500 truncate">Clinical Director</p>
+                      <p className="text-[10px] font-bold text-slate-500 truncate">Hospital Manager</p>
                    </div>
                 </div>
                 <button 
                    onClick={() => supabase.auth.signOut().then(() => navigate("/"))}
                    className="mt-6 w-full py-3 rounded-xl bg-white/5 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:bg-rose-500/10 hover:text-rose-400 transition-all border border-white/5"
                 >
-                   Secure Sign Out
+                   Logout
                 </button>
              </div>
           </div>
@@ -293,7 +293,7 @@ export default function ManagementDashboard() {
                </div>
                <div>
                   <h1 className="text-2xl font-black text-white tracking-tight leading-none uppercase italic truncate max-w-sm">
-                    {hospital?.name || "Facility Terminal"}
+                    {hospital?.name || "Hospital Dashboard"}
                   </h1>
                   <p className="text-[10px] font-bold text-slate-500 mt-2 flex items-center gap-2 tracking-widest uppercase">
                     <span className="h-1.5 w-1.5 bg-teal-500 rounded-full animate-pulse" />
@@ -316,7 +316,7 @@ export default function ManagementDashboard() {
                  <span className="absolute top-3 right-3 h-1.5 w-1.5 bg-teal-500 rounded-full ring-2 ring-[#0A0D12]" />
                </button>
                <button onClick={() => navigate("/marketplace")} className="h-11 px-6 rounded-2xl bg-teal-500 text-slate-900 font-black text-[10px] uppercase tracking-widest flex items-center gap-2 hover:bg-teal-400 transition-all shadow-xl shadow-teal-500/20 active:scale-95">
-                 <Plus size={16} /> Procure Assets
+                 <Plus size={16} /> Buy Equipment
                </button>
             </div>
           </header>
@@ -408,7 +408,7 @@ export default function ManagementDashboard() {
                          ))}
                       </div>
                       <Link to="/appointments" className="mt-8 py-4 rounded-2xl bg-slate-900 border border-slate-800 text-center text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-white transition-all">
-                        Access Full Roster
+                        View All Staff
                       </Link>
                    </div>
                 </div>
@@ -419,7 +419,7 @@ export default function ManagementDashboard() {
                 <div className="bg-[#0F131A] rounded-[2.5rem] p-10 border border-white/5 shadow-2xl">
                    <div className="flex items-center justify-between mb-12">
                       <div>
-                        <h3 className="text-2xl font-black text-white tracking-tight italic uppercase">Booking Manifest</h3>
+                        <h3 className="text-2xl font-black text-white tracking-tight italic uppercase">Appointment List</h3>
                         <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">Real-time scheduling data from secure clinical pipes</p>
                       </div>
                       <button className="h-11 px-6 rounded-2xl bg-white/5 border border-white/5 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-white transition-all flex items-center gap-2">
@@ -484,7 +484,7 @@ export default function ManagementDashboard() {
                         }}
                         className="h-12 px-8 rounded-2xl bg-teal-500 text-slate-900 font-black text-[10px] uppercase tracking-widest flex items-center gap-2 hover:bg-teal-400 transition-all shadow-xl shadow-teal-500/20"
                       >
-                         <Plus size={16} /> Enlist Personnel
+                         <Plus size={16} /> Add Staff Member
                       </button>
                    </div>
 
@@ -525,7 +525,7 @@ export default function ManagementDashboard() {
             {activeTab === "inventory" && (
                 <div className="bg-[#0F131A] rounded-[2.5rem] p-10 border border-white/5 shadow-2xl">
                    <div className="flex items-center justify-between mb-12">
-                      <h3 className="text-2xl font-black text-white tracking-tight italic uppercase">Resource Vault</h3>
+                      <h3 className="text-2xl font-black text-white tracking-tight italic uppercase">Inventory</h3>
                       <Link to="/marketplace" className="h-11 px-6 rounded-2xl bg-white/5 border border-white/5 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-white transition-all flex items-center gap-2">
                         <Database size={16} /> Data Ledger
                       </Link>
@@ -558,7 +558,7 @@ export default function ManagementDashboard() {
             {activeTab === "settings" && (
                 <div className="max-w-4xl mx-auto space-y-12">
                    <div className="bg-[#0F131A] rounded-[2.5rem] p-12 border border-white/5 shadow-2xl">
-                      <h3 className="text-2xl font-black text-white tracking-tight italic uppercase mb-10">Facility Registry Editor</h3>
+                      <h3 className="text-2xl font-black text-white tracking-tight italic uppercase mb-10">Hospital Settings</h3>
                       <form onSubmit={updateHospital} className="grid grid-cols-1 md:grid-cols-2 gap-10">
                          <div className="space-y-3">
                             <label className="text-[9px] font-black text-slate-500 uppercase tracking-[0.4em] ml-2">Hospital Identifier</label>
@@ -593,7 +593,7 @@ export default function ManagementDashboard() {
            <div className="w-full max-w-2xl bg-[#0F131A] rounded-[3rem] p-12 border border-white/10 shadow-3xl animate-in zoom-in-95 duration-500 max-h-[90vh] overflow-y-auto">
               <div className="flex items-center justify-between mb-12">
                  <div>
-                    <h3 className="text-3xl font-black text-white italic uppercase tracking-tighter">Staff Provisioning</h3>
+                    <h3 className="text-3xl font-black text-white italic uppercase tracking-tighter">Add Staff Member</h3>
                     <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-2 italic">Register new medical personnel into the clinical grid</p>
                  </div>
                  <button onClick={() => setShowStaffModal(false)} className="h-12 w-12 rounded-2xl bg-white/5 flex items-center justify-center text-slate-400 hover:text-white transition-all transform hover:rotate-90">
@@ -607,7 +607,7 @@ export default function ManagementDashboard() {
                     <input required value={currentStaff.full_name} onChange={e => setCurrentStaff({...currentStaff, full_name: e.target.value})} className="w-full h-14 bg-slate-900 border border-slate-800 rounded-2xl px-6 text-sm font-bold text-white focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500/50 outline-none transition-all placeholder:text-slate-700" placeholder="e.g., Dr. Stephen Strange" />
                  </div>
                  {/* Similar styling for other inputs... */}
-                 <button className="md:col-span-2 h-16 rounded-[1.5rem] bg-teal-500 text-slate-900 font-black text-xs uppercase tracking-[0.3em] shadow-2xl shadow-teal-500/20 active:scale-95 transition-all">Submit Personnel Payload</button>
+                 <button className="md:col-span-2 h-16 rounded-[1.5rem] bg-teal-500 text-slate-900 font-black text-xs uppercase tracking-[0.3em] shadow-2xl shadow-teal-500/20 active:scale-95 transition-all">Save Staff Member</button>
               </form>
            </div>
         </div>
