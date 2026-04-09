@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { 
   Hospital, ArrowUpRight, ArrowDownRight, 
   Plus, Search, FileDown, Filter, Trash2, Edit3,
-  Shield, Globe, Database, CreditCard, Activity, Bell, Package, CheckCircle2, AlertTriangle
+  Shield, Globe, Database, CreditCard, Activity, Bell, Package, CheckCircle2
 } from "lucide-react";
 import { 
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
@@ -630,7 +630,7 @@ export default function AdminDashboard() {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-                 {allUsers.filter(u => u.role === "admin" || i === 0).slice(0, 6).map((admin: any, i) => (
+                 {allUsers.filter((u, index) => u.role === "admin" || index === 0).slice(0, 6).map((admin: any, i) => (
                    <div key={i} className="bg-white/5 rounded-[2.5rem] p-10 border border-white/5 group hover:border-indigo-500/30 transition-all text-center">
                       <div className="h-24 w-24 rounded-[2rem] bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 text-4xl font-black mx-auto mb-8 shadow-inner group-hover:scale-110 transition-transform duration-700">
                          {admin.full_name?.[0] || "A"}
