@@ -37,17 +37,17 @@ const Navbar = () => {
   }, []);
 
   const handleLogout = async () => {
-    showToast("Terminating session...", "loading");
+    showToast("Logging out...", "loading");
     await supabase.auth.signOut();
-    showToast("Session terminated successfully", "success");
+    showToast("Logged out successfully", "success");
     setIsOpen(false);
     navigate("/");
   };
 
   const navLinks = [
-    { name: "Platform", href: "/" },
+    { name: "Home", href: "/" },
     { name: "Hospitals", href: "/hospitals" },
-    { name: "Global Network", href: "/about" },
+    { name: "About", href: "/about" },
   ];
 
   if (role === "management" || role === "admin") {
@@ -77,7 +77,7 @@ const Navbar = () => {
           </div>
           <div className="flex flex-col">
             <span className="text-2xl font-black tracking-tighter text-slate-900 leading-none italic">MedicoCrew</span>
-            <span className="text-[10px] font-black text-indigo-500 uppercase tracking-[0.3em] mt-1">Unified Command</span>
+            <span className="text-[10px] font-black text-indigo-500 uppercase tracking-[0.3em] mt-1">Healthcare Management</span>
           </div>
         </Link>
 
@@ -129,7 +129,7 @@ const Navbar = () => {
               to="/auth"
               className="h-12 px-10 rounded-2xl bg-indigo-600 text-[11px] font-black uppercase tracking-[0.2em] text-white shadow-xl shadow-indigo-600/30 hover:bg-indigo-500 hover:shadow-indigo-600/40 transition-all active:scale-95 flex items-center gap-3"
             >
-              <LogIn size={18} /> Portal Access
+              <LogIn size={18} /> Login
             </Link>
           )}
         </div>
@@ -184,7 +184,7 @@ const Navbar = () => {
                         onClick={handleLogout}
                         className="w-full h-16 rounded-[1.5rem] border-2 border-rose-100 text-rose-600 font-black uppercase tracking-widest flex items-center justify-center gap-3"
                       >
-                         <LogOut size={20} /> Terminate Session
+                         <LogOut size={20} /> Logout
                       </button>
                    </>
                  ) : (
@@ -193,7 +193,7 @@ const Navbar = () => {
                      className="w-full h-16 rounded-[1.5rem] bg-indigo-600 text-white font-black uppercase tracking-widest flex items-center justify-center gap-3 shadow-2xl shadow-indigo-600/20"
                      onClick={() => setIsOpen(false)}
                    >
-                     <LogIn size={20} /> Enterprise Login
+                     <LogIn size={20} /> Login
                    </Link>
                  )}
               </div>

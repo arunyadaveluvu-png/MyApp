@@ -31,7 +31,7 @@ const Footer = () => {
           </div>
 
           <div>
-            <h3 className="mb-6 font-semibold text-slate-900">Platform</h3>
+            <h3 className="mb-6 font-semibold text-slate-900">Home</h3>
             <ul className="flex flex-col gap-4 text-sm text-slate-500">
               <li><Link to="/hospitals" className="hover:text-primary-600">Find Hospitals</Link></li>
               <li><Link to="/marketplace" className="hover:text-primary-600">Medical Marketplace</Link></li>
@@ -41,7 +41,7 @@ const Footer = () => {
           </div>
 
           <div>
-            <h3 className="mb-6 font-semibold text-slate-900">For Facilities</h3>
+            <h3 className="mb-6 font-semibold text-slate-900">For Hospitals</h3>
             <ul className="flex flex-col gap-4 text-sm text-slate-500">
               <li><Link to="/auth" className="hover:text-primary-600">Hospital Login</Link></li>
               <li><Link to="/register" className="hover:text-primary-600">Partner with Us</Link></li>
